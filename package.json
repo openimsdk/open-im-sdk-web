@@ -1,0 +1,22 @@
+{
+  "name": "open-im-sdk",
+  "version": "1.0.3",
+  "description": "OpenIM SDK",
+  "main": "dist/index.js",
+  "source":"src/index.ts",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "rm -rf ./distt & tsc",
+    "mic":"rm -rf ./dist & microbundle",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "im"
+  ],
+  "author": "blooming",
+  "license": "ISC",
+  "devDependencies": {
+    "microbundle": "^0.13.3",
+    "typescript": "^4.4.3"
+  }
+}
