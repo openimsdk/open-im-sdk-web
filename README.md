@@ -50,7 +50,7 @@ Open im includes instant messaging and real-time audio and video server and clie
   ```typescript
   const sendMsgDemo = async () => {
     const textStr = "hello open im";
-  	const data = await openIM.createTextMsg(dataStr);
+  	const data = await openIM.createTextMessage(textStr);
   	const params = {
   	  recvID: "xxx",
   	  groupID: "",
