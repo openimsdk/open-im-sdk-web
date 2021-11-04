@@ -122,18 +122,12 @@ export type SendMsgParams = {
   message: string;
 };
 
-export type SendMsgNotParams = {
-  receiver: string;
-  groupID: string;
-  onlineUserOnly: boolean;
-  message: string;
-};
 
 export type GetHistoryMsgParams = {
   userID: string;
   groupID: string;
   count: number;
-  startMsg: string;
+  startMsg: any;
 };
 
 export type InsertSingleMsgParams = {
@@ -178,19 +172,19 @@ export type SetFriendParams = {
 };
 
 export type InviteGroupParams = {
-  groupid: string;
+  groupId: string;
   reason: string;
   userList: string[];
 };
 
 export type GetGroupMemberParams = {
-  groupid: string;
+  groupId: string;
   filter: number;
   next: number;
 };
 
 export type CreateGroupParams = {
-  gInfo: GroupInfo;
+  gInfo: Omit<GroupInfo,'groupId'>;
   memberList: member[];
 };
 
@@ -198,6 +192,7 @@ export type member = {
   uid:string;
   setRole:number;
 }
+
 
 export type GroupInfo = {
   groupId:string;
@@ -268,6 +263,8 @@ export default class OpenIMSDK extends Emitter {
         this.ws.onopen = () => {
           this.uid = uid;
           this.token = token;
+          console.log("once open:::");
+          
           this.iLogin(loginData,operationID)
           .then(res=>{
             this.logoutFlag = false;
@@ -339,6 +336,8 @@ export default class OpenIMSDK extends Emitter {
   }
 
   private iLogin(data: LoginParams, operationID?: string) {
+    console.log("cal iLogin::::");
+    
     return new Promise<WsResponse>((resolve, reject) => {
       const _uuid = operationID || uuid();
       const args = {
@@ -512,11 +511,14 @@ export default class OpenIMSDK extends Emitter {
   createMergerMessage = (data: MergerMsgParams, operationID?: string) => {
     return new Promise<WsResponse>((resolve, reject) => {
       const _uuid = operationID || uuid();
+      let tmp:any = data
+      tmp.messageList = JSON.stringify(data.messageList)
+      tmp.summaryList = JSON.stringify(data.summaryList)
       const args = {
         reqFuncName: RequestFunc.CREATEMERGERMESSAGE,
         operationID: _uuid,
         uid: this.uid,
-        data,
+        data:tmp
       };
       this.wsSend(args, resolve, reject);
     });
@@ -587,14 +589,17 @@ export default class OpenIMSDK extends Emitter {
     });
   };
 
-  sendMessageNotOss = (data: SendMsgNotParams, operationID?: string) => {
+  sendMessageNotOss = (data: SendMsgParams, operationID?: string) => {
     return new Promise<WsResponse>((resolve, reject) => {
       const _uuid = operationID || uuid();
+      let tmp:any = Object.assign({},data);
+      tmp.receiver = data.recvID;
+      delete tmp.recvID;
       const args = {
         reqFuncName: RequestFunc.SENDMESSAGENOTOSS,
         operationID: _uuid,
         uid: this.uid,
-        data,
+        data:tmp,
       };
       this.wsSend(args, resolve, reject);
     });
@@ -609,6 +614,7 @@ export default class OpenIMSDK extends Emitter {
         uid: this.uid,
         data,
       };
+      
       this.wsSend(args, resolve, reject);
     });
   };
@@ -644,6 +650,19 @@ export default class OpenIMSDK extends Emitter {
       const _uuid = operationID || uuid();
       const args = {
         reqFuncName: RequestFunc.MARKSINGLEMESSAGEHASREAD,
+        operationID: _uuid,
+        uid: this.uid,
+        data,
+      };
+      this.wsSend(args, resolve, reject);
+    });
+  };
+
+  markGroupMessageHasRead = (data: string, operationID?: string) => {
+    return new Promise<WsResponse>((resolve, reject) => {
+      const _uuid = operationID || uuid();
+      const args = {
+        reqFuncName: RequestFunc.MARKGROUPMESSAGEHASREAD,
         operationID: _uuid,
         uid: this.uid,
         data,
@@ -1053,7 +1072,9 @@ export default class OpenIMSDK extends Emitter {
         reqFuncName: RequestFunc.SETGROUPINFO,
         operationID: _uuid,
         uid: this.uid,
-        data,
+        data:{
+          groupInfo:JSON.stringify(data)
+        }
       };
       this.wsSend(args, resolve, reject);
     });
@@ -1062,11 +1083,14 @@ export default class OpenIMSDK extends Emitter {
   getGroupsInfo = (data: string[], operationID?: string) => {
     return new Promise<WsResponse>((resolve, reject) => {
       const _uuid = operationID || uuid();
+      const tmp = {
+        groupIdList:JSON.stringify(data)
+      }
       const args = {
         reqFuncName: RequestFunc.GETGROUPSINFO,
         operationID: _uuid,
         uid: this.uid,
-        data,
+        data:tmp,
       };
       this.wsSend(args, resolve, reject);
     });
@@ -1164,7 +1188,8 @@ export default class OpenIMSDK extends Emitter {
       this.ws!.send(JSON.stringify(params));
       this.ws!.onmessage = (ev: MessageEvent<string>) => {
         const data = JSON.parse(ev.data);
-
+        console.log("native log::::::");
+            console.log(data);
         // this.resetHeart();
         // this.startHeart();
 
@@ -1204,7 +1229,7 @@ export default class OpenIMSDK extends Emitter {
            //@ts-ignore
 					this.ws!.onMessage((res) =>{
             const data = JSON.parse(res.data)
-
+            
             // this.resetHeart();
             // this.startHeart();
 
@@ -1250,9 +1275,13 @@ export default class OpenIMSDK extends Emitter {
     if(this.platform==="web"){
       this.ws = new WebSocket(this.wsUrl);
       this.ws.onclose = ()=>{
+        console.log("ws onclose");
+        
         if(!this.logoutFlag)this.reconnect()
       };
       this.ws.onopen = ()=>{
+        console.log("ws onopen::::");
+        
         // this.resetHeart();
         // this.startHeart();
         const loginData = {
