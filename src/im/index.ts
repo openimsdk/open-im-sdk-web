@@ -41,8 +41,8 @@ export type SelfInfo = {
 };
 
 export type AtMsgParams = {
-  textMsg: string;
-  atList: string[];
+  text: string;
+  atUserList: string[];
 };
 
 export type ImageMsgParams = {
@@ -431,7 +431,7 @@ export default class OpenIMSDK extends Emitter {
   createTextAtMessage = (data: AtMsgParams, operationID?: string) => {
     return new Promise<WsResponse>((resolve, reject) => {
       const tmp: any = data;
-      tmp.atList = JSON.stringify(tmp.atList);
+      tmp.atUserList = JSON.stringify(tmp.atUserList);
       const _uuid = operationID || uuid();
       const args = {
         reqFuncName: RequestFunc.CREATETEXTATMESSAGE,
