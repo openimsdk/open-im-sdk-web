@@ -7,8 +7,8 @@ export type InitConfig = {
   token: string;
   url: string;
   platformID: number;
-  operationID?:string
-}
+  operationID?: string;
+};
 
 export type WsParams = {
   reqFuncName: RequestFunc;
@@ -46,26 +46,26 @@ export type AtMsgParams = {
 };
 
 export type ImageMsgParams = {
-  sourcePicture:PicBaseInfo;
-  bigPicture:PicBaseInfo;
-  snapshotPicture:PicBaseInfo;
-}
+  sourcePicture: PicBaseInfo;
+  bigPicture: PicBaseInfo;
+  snapshotPicture: PicBaseInfo;
+};
 
 export type PicBaseInfo = {
-  uuid:string;
-  type:string;
-  size:number;
-  width:number;
-  height:number;
-  url:string;
-}
+  uuid: string;
+  type: string;
+  size: number;
+  width: number;
+  height: number;
+  url: string;
+};
 
 export type SoundMsgParams = {
-  uuid:string;
-  soundPath:string;
-  sourceUrl:string;
-  dataSize:number;
-  duration:number;
+  uuid: string;
+  soundPath: string;
+  sourceUrl: string;
+  dataSize: number;
+  duration: number;
 };
 
 export type VideoMsgParams = {
@@ -73,30 +73,29 @@ export type VideoMsgParams = {
   duration: number;
   videoType: string;
   snapshotPath: string;
-  videoUUID:string;
-  videoUrl:string;
-  videoSize:number;
-  snapshotUUID:string;
-  snapshotSize:number;
-  snapshotUrl:string;
-  snapshotWidth:number;
-  snapshotHeight:number
+  videoUUID: string;
+  videoUrl: string;
+  videoSize: number;
+  snapshotUUID: string;
+  snapshotSize: number;
+  snapshotUrl: string;
+  snapshotWidth: number;
+  snapshotHeight: number;
 };
 
 export type FileMsgParams = {
   filePath: string;
   fileName: string;
-  uuid:string;
-  sourceUrl:string;
-  fileSize:number
+  uuid: string;
+  sourceUrl: string;
+  fileSize: number;
 };
 
 export type MergerMsgParams = {
-  messageList:string[],
-  title:string,
-  summaryList:string[]
-}
-
+  messageList: string[];
+  title: string;
+  summaryList: string[];
+};
 
 export type LocationMsgParams = {
   description: string;
@@ -111,9 +110,9 @@ export type CustomMsgParams = {
 };
 
 export type QuoteMsgParams = {
-  text:string;
-  message:string;
-}
+  text: string;
+  message: string;
+};
 
 export type SendMsgParams = {
   recvID: string;
@@ -121,7 +120,6 @@ export type SendMsgParams = {
   onlineUserOnly: boolean;
   message: string;
 };
-
 
 export type GetHistoryMsgParams = {
   userID: string;
@@ -184,18 +182,17 @@ export type GetGroupMemberParams = {
 };
 
 export type CreateGroupParams = {
-  gInfo: Omit<GroupInfo,'groupId'>;
+  gInfo: Omit<GroupInfo, "groupId">;
   memberList: member[];
 };
 
 export type member = {
-  uid:string;
-  setRole:number;
-}
-
+  uid: string;
+  setRole: number;
+};
 
 export type GroupInfo = {
-  groupId:string;
+  groupId: string;
   groupName: string;
   introduction: string;
   notification: string;
@@ -217,6 +214,14 @@ export type AccessGroupParams = {
   reason: string;
 };
 
+type Ws2Promise = {
+  oid: string;
+  mname: string;
+  mrsve: (value: WsResponse | PromiseLike<WsResponse>) => void;
+  mrjet: (reason?: any) => void;
+  flag: boolean;
+};
+
 export default class OpenIMSDK extends Emitter {
   private ws: WebSocket | undefined;
   private uid: string | undefined;
@@ -226,6 +231,7 @@ export default class OpenIMSDK extends Emitter {
   private lock: boolean = false;
   private logoutFlag: boolean = false;
   private timer: number | undefined;
+  private ws2promise: Ws2Promise[] = [];
 
   constructor() {
     super();
@@ -244,100 +250,100 @@ export default class OpenIMSDK extends Emitter {
    */
   login(config: InitConfig) {
     return new Promise<WsResponse>((resolve, reject) => {
-      const { uid, token, url, platformID, operationID} = config
+      const { uid, token, url, platformID, operationID } = config;
       this.wsUrl = `${url}?sendID=${uid}&token=${token}&platformID=${platformID}`;
       const loginData = {
         uid,
-        token
-      }
-      let errData:WsResponse = {
+        token,
+      };
+      let errData: WsResponse = {
         event: RequestFunc.LOGIN,
         errCode: 0,
         errMsg: "",
         data: "",
-        operationID:operationID || ""
-      }
-      if(this.platform === "web"){
+        operationID: operationID || "",
+      };
+      if (this.platform === "web") {
         this.ws = new WebSocket(this.wsUrl);
 
         this.ws.onopen = () => {
           this.uid = uid;
           this.token = token;
-          console.log("once open:::");
-          
-          this.iLogin(loginData,operationID)
-          .then(res=>{
-            this.logoutFlag = false;
-            resolve(res);
-          })
-          .catch(err=>{
-            reject(err);
-          })
+          // console.log("once open:::");
+
+          this.iLogin(loginData, operationID)
+            .then((res) => {
+              this.logoutFlag = false;
+              resolve(res);
+            })
+            .catch((err) => {
+              reject(err);
+            });
         };
 
         this.ws.onclose = () => {
-          errData.errCode = 111
-          errData.errMsg = "ws connect failed..."
-          if(!this.logoutFlag)this.reconnect()
+          errData.errCode = 111;
+          errData.errMsg = "ws connect failed...";
+          if (!this.logoutFlag) this.reconnect();
           reject(errData);
         };
 
         this.ws.onerror = (err) => {
-          errData.errCode = 111
-          errData.errMsg = "ws connect failed..."
+          errData.errCode = 111;
+          errData.errMsg = "ws connect failed...";
           reject(errData);
         };
-      }else if(this.platform ==="uni"||this.platform==="wx"){
-        this.ws = this.platform === "uni"?
+      } else if (this.platform === "uni" || this.platform === "wx") {
+        this.ws =
+          this.platform === "uni"
+            ? //@ts-ignore
+              uni.connectSocket({
+                url: this.wsUrl,
+                complete: () => {},
+              })
+            : //@ts-ignore
+              wx.connectSocket({
+                url: this.wsUrl,
+                complete: () => {},
+              });
         //@ts-ignore
-        uni.connectSocket({
-          url:this.wsUrl,
-          complete: () => {}
-        }):
-        //@ts-ignore
-        wx.connectSocket({
-          url:this.wsUrl,
-          complete: () => {}
-        })
-        //@ts-ignore
-        this.ws.onOpen(()=>{
+        this.ws.onOpen(() => {
           this.uid = uid;
-          this.iLogin(loginData,operationID)
-          .then(res=>{
-            this.logoutFlag = false;
-            resolve(res);
-          })
-          .catch(err=>{
-            errData.errCode = 111
-            errData.errMsg = "ws connect failed..."
-            reject(errData);
-          })
-        })
+          this.iLogin(loginData, operationID)
+            .then((res) => {
+              this.logoutFlag = false;
+              resolve(res);
+            })
+            .catch((err) => {
+              errData.errCode = 111;
+              errData.errMsg = "ws connect failed...";
+              reject(errData);
+            });
+        });
         //@ts-ignore
-        this.ws.onClose(()=>{
-          errData.errCode = 111
-          errData.errMsg = "ws connect failed..."
-          if(!this.logoutFlag)this.reconnect()
+        this.ws.onClose(() => {
+          errData.errCode = 111;
+          errData.errMsg = "ws connect failed...";
+          if (!this.logoutFlag) this.reconnect();
           reject(errData);
-        })
+        });
         //@ts-ignore
-        this.ws.onError(()=>{
-          errData.errCode = 111
-          errData.errMsg = "ws connect failed..."
+        this.ws.onError(() => {
+          errData.errCode = 111;
+          errData.errMsg = "ws connect failed...";
           reject(errData);
-        })
-      }else{
-        errData.errCode = 112
-        errData.errMsg = "The current platform is not supported..."
+        });
+      } else {
+        errData.errCode = 112;
+        errData.errMsg = "The current platform is not supported...";
         reject(errData);
       }
-      
     });
   }
 
   private iLogin(data: LoginParams, operationID?: string) {
-    console.log("cal iLogin::::");
-    
+    // console.log("cal iLogin::::");
+
     return new Promise<WsResponse>((resolve, reject) => {
       const _uuid = operationID || uuid();
       const args = {
@@ -446,7 +452,7 @@ export default class OpenIMSDK extends Emitter {
   createImageMessage = (data: ImageMsgParams, operationID?: string) => {
     return new Promise<WsResponse>((resolve, reject) => {
       const _uuid = operationID || uuid();
-      let tmp:any = data;
+      let tmp: any = data;
       tmp.bigPicture = JSON.stringify(tmp.bigPicture);
       tmp.snapshotPicture = JSON.stringify(tmp.snapshotPicture);
       tmp.sourcePicture = JSON.stringify(tmp.sourcePicture);
@@ -454,7 +460,7 @@ export default class OpenIMSDK extends Emitter {
         reqFuncName: RequestFunc.CREATEIMAGEMESSAGEFROMBYURL,
         operationID: _uuid,
         uid: this.uid,
-        data:JSON.stringify(tmp)
+        data: JSON.stringify(tmp),
       };
       this.wsSend(args, resolve, reject);
     });
@@ -464,13 +470,13 @@ export default class OpenIMSDK extends Emitter {
     return new Promise<WsResponse>((resolve, reject) => {
       const _uuid = operationID || uuid();
       let tmp = {
-        soundBaseInfo:JSON.stringify(data)
+        soundBaseInfo: JSON.stringify(data),
       };
       const args = {
         reqFuncName: RequestFunc.CREATESOUNDMESSAGEBYURL,
         operationID: _uuid,
         uid: this.uid,
-        data:JSON.stringify(tmp)
+        data: JSON.stringify(tmp),
       };
       this.wsSend(args, resolve, reject);
     });
@@ -480,13 +486,13 @@ export default class OpenIMSDK extends Emitter {
     return new Promise<WsResponse>((resolve, reject) => {
       const _uuid = operationID || uuid();
       let tmp = {
-        videoBaseInfo:JSON.stringify(data)
-      }
+        videoBaseInfo: JSON.stringify(data),
+      };
       const args = {
         reqFuncName: RequestFunc.CREATEVIDEOMESSAGEBYURL,
         operationID: _uuid,
         uid: this.uid,
-        data:JSON.stringify(tmp)
+        data: JSON.stringify(tmp),
       };
       this.wsSend(args, resolve, reject);
     });
@@ -496,13 +502,13 @@ export default class OpenIMSDK extends Emitter {
     return new Promise<WsResponse>((resolve, reject) => {
       const _uuid = operationID || uuid();
       let tmp = {
-        fileBaseInfo:JSON.stringify(data)
-      }
+        fileBaseInfo: JSON.stringify(data),
+      };
       const args = {
         reqFuncName: RequestFunc.CREATEFILEMESSAGEBYURL,
         operationID: _uuid,
         uid: this.uid,
-        data:JSON.stringify(tmp)
+        data: JSON.stringify(tmp),
       };
       this.wsSend(args, resolve, reject);
     });
@@ -511,14 +517,14 @@ export default class OpenIMSDK extends Emitter {
   createMergerMessage = (data: MergerMsgParams, operationID?: string) => {
     return new Promise<WsResponse>((resolve, reject) => {
       const _uuid = operationID || uuid();
-      let tmp:any = data
-      tmp.messageList = JSON.stringify(data.messageList)
-      tmp.summaryList = JSON.stringify(data.summaryList)
+      let tmp: any = data;
+      tmp.messageList = JSON.stringify(data.messageList);
+      tmp.summaryList = JSON.stringify(data.summaryList);
       const args = {
         reqFuncName: RequestFunc.CREATEMERGERMESSAGE,
         operationID: _uuid,
         uid: this.uid,
-        data:tmp
+        data: tmp,
       };
       this.wsSend(args, resolve, reject);
     });
@@ -592,14 +598,14 @@ export default class OpenIMSDK extends Emitter {
   sendMessageNotOss = (data: SendMsgParams, operationID?: string) => {
     return new Promise<WsResponse>((resolve, reject) => {
       const _uuid = operationID || uuid();
-      let tmp:any = Object.assign({},data);
+      let tmp: any = Object.assign({}, data);
       tmp.receiver = data.recvID;
       delete tmp.recvID;
       const args = {
         reqFuncName: RequestFunc.SENDMESSAGENOTOSS,
         operationID: _uuid,
         uid: this.uid,
-        data:tmp,
+        data: tmp,
       };
       this.wsSend(args, resolve, reject);
     });
@@ -614,7 +620,7 @@ export default class OpenIMSDK extends Emitter {
         uid: this.uid,
         data,
       };
-      
+
       this.wsSend(args, resolve, reject);
     });
   };
@@ -1072,9 +1078,9 @@ export default class OpenIMSDK extends Emitter {
         reqFuncName: RequestFunc.SETGROUPINFO,
         operationID: _uuid,
         uid: this.uid,
-        data:{
-          groupInfo:JSON.stringify(data)
-        }
+        data: {
+          groupInfo: JSON.stringify(data),
+        },
       };
       this.wsSend(args, resolve, reject);
     });
@@ -1084,13 +1090,13 @@ export default class OpenIMSDK extends Emitter {
     return new Promise<WsResponse>((resolve, reject) => {
       const _uuid = operationID || uuid();
       const tmp = {
-        groupIdList:JSON.stringify(data)
-      }
+        groupIdList: JSON.stringify(data),
+      };
       const args = {
         reqFuncName: RequestFunc.GETGROUPSINFO,
         operationID: _uuid,
         uid: this.uid,
-        data:tmp,
+        data: tmp,
       };
       this.wsSend(args, resolve, reject);
     });
@@ -1183,73 +1189,96 @@ export default class OpenIMSDK extends Emitter {
   ) => {
     if (typeof params.data === "object")
       params.data = JSON.stringify(params.data);
-    
-    if(this.platform=="web"){
+
+    const ws2p = {
+      oid: params.operationID,
+      mname: params.reqFuncName,
+      mrsve: resolve,
+      mrjet: reject,
+      flag: false,
+    };
+    this.ws2promise.push(ws2p);
+
+    if (this.platform == "web") {
       this.ws!.send(JSON.stringify(params));
       this.ws!.onmessage = (ev: MessageEvent<string>) => {
         const data = JSON.parse(ev.data);
-        console.log("native log::::::");
-            console.log(data);
-        // this.resetHeart();
-        // this.startHeart();
 
         if (
-          Object.prototype.hasOwnProperty.call(CbEvents, data.event.toUpperCase())
+          Object.prototype.hasOwnProperty.call(
+            CbEvents,
+            data.event.toUpperCase()
+          )
         )
           this.emit(data.event, data);
-        
-        if(params.reqFuncName===RequestFunc.LOGOUT){
-            this.logoutFlag = true;
-            this.ws!.close();
-            this.ws = undefined;
+
+        if (params.reqFuncName === RequestFunc.LOGOUT) {
+          this.logoutFlag = true;
+          this.ws!.close();
+          this.ws = undefined;
         }
-          
-        if (
-          data.event == params.reqFuncName &&
-          data.operationID == params.operationID
-        ) {
+
+        const wspidx = this.ws2promise.findIndex(
+          (wsp) => wsp.oid === data.operationID
+        );
+        if (wspidx > -1) {
           if (data.errCode === 0) {
-            resolve(data);
+            this.ws2promise[wspidx].mrsve(data);
           } else {
-            reject(data);
+            this.ws2promise[wspidx].mrjet(data);
           }
+          this.ws2promise.splice(wspidx, wspidx + 1);
         }
       };
-    }else{
+    } else {
       this.ws!.send({
-         //@ts-ignore
-				data: JSON.stringify(params),
-         //@ts-ignore
-				success: (res) => {
+        //@ts-ignore
+        data: JSON.stringify(params),
+        success: (res: any) => {
           //@ts-ignore
-          if(this.platform==="uni"&&this.ws!._callbacks!==undefined&&this.ws!._callbacks.message!==undefined){
+          if (
+            this.platform === "uni" &&
             //@ts-ignore
-					  this.ws!._callbacks.message = [];
+            this.ws!._callbacks !== undefined &&
+            //@ts-ignore
+            this.ws!._callbacks.message !== undefined
+          ) {
+            //@ts-ignore
+            this.ws!._callbacks.message = [];
           }
-           //@ts-ignore
-					this.ws!.onMessage((res) =>{
-            const data = JSON.parse(res.data)
-            
-            // this.resetHeart();
-            // this.startHeart();
+          //@ts-ignore
+          this.ws!.onMessage((ev) => {
+            const data = JSON.parse(ev.data);
 
-						if (Object.prototype.hasOwnProperty.call(CbEvents, data.event.toUpperCase())) this.emit(data.event, data);
-      
             if (
-              data.event == params.reqFuncName &&
-              data.operationID == params.operationID
-            ) {
-              if (data.errCode === 0) {
-                resolve(data);
-              } else {
-                reject(data);
-              }
+              Object.prototype.hasOwnProperty.call(
+                CbEvents,
+                data.event.toUpperCase()
+              )
+            )
+              this.emit(data.event, data);
+
+            if (params.reqFuncName === RequestFunc.LOGOUT) {
+              this.logoutFlag = true;
+              this.ws!.close();
+              this.ws = undefined;
             }
-					})
-				}
-			})
+
+            const wspidx = this.ws2promise.findIndex(
+              (wsp) => wsp.oid === data.operationID
+            );
+            if (wspidx > -1) {
+              if (data.errCode === 0) {
+                this.ws2promise[wspidx].mrsve(data);
+              } else {
+                this.ws2promise[wspidx].mrjet(data);
+              }
+              this.ws2promise.splice(wspidx, wspidx + 1);
+            }
+          });
+        },
+      });
     }
-    
   };
 
   private getPlatform() {
@@ -1272,74 +1301,70 @@ export default class OpenIMSDK extends Emitter {
   }
 
   private createWs() {
-    if(this.platform==="web"){
+    if (this.platform === "web") {
       this.ws = new WebSocket(this.wsUrl);
-      this.ws.onclose = ()=>{
-        console.log("ws onclose");
-        
-        if(!this.logoutFlag)this.reconnect()
+      this.ws.onclose = () => {
+        // console.log("ws onclose");
+
+        if (!this.logoutFlag) this.reconnect();
       };
-      this.ws.onopen = ()=>{
-        console.log("ws onopen::::");
-        
+      this.ws.onopen = () => {
+        // console.log("ws onopen::::");
+
         // this.resetHeart();
         // this.startHeart();
         const loginData = {
-          uid:this.uid!,
-          token:this.token!
-        }
-        this.iLogin(loginData)
-          .then(res=>this.logoutFlag = false)
-      }
-    }else if(this.platform==="uni"){
+          uid: this.uid!,
+          token: this.token!,
+        };
+        this.iLogin(loginData).then((res) => (this.logoutFlag = false));
+      };
+    } else if (this.platform === "uni") {
       //@ts-ignore
       this.ws = uni.connectSocket({
-        url:this.wsUrl,
-        complete: () => {}
-      })
+        url: this.wsUrl,
+        complete: () => {},
+      });
       //@ts-ignore
-      this.ws.onClose = ()=>{
-        if(!this.logoutFlag)this.reconnect()
+      this.ws.onClose = () => {
+        if (!this.logoutFlag) this.reconnect();
       };
       //@ts-ignore
-      this.ws.onOpen = ()=>{
+      this.ws.onOpen = () => {
         const loginData = {
-          uid:this.uid!,
-          token:this.token!
-        }
-        this.iLogin(loginData)
-          .then(res=>this.logoutFlag = false)
-      }
-    }else if(this.platform==="wx"){
+          uid: this.uid!,
+          token: this.token!,
+        };
+        this.iLogin(loginData).then((res) => (this.logoutFlag = false));
+      };
+    } else if (this.platform === "wx") {
       //@ts-ignore
       this.ws = wx.connectSocket({
-        url:this.wsUrl,
+        url: this.wsUrl,
         complete: () => {},
-      })
+      });
       //@ts-ignore
-      this.ws.onClose = ()=>{
-        if(!this.logoutFlag)this.reconnect()
-      }
+      this.ws.onClose = () => {
+        if (!this.logoutFlag) this.reconnect();
+      };
       //@ts-ignore
-      this.ws.onOpen = ()=>{
+      this.ws.onOpen = () => {
         const loginData = {
-          uid:this.uid!,
-          token:this.token!
-        }
-        this.iLogin(loginData)
-          .then(res=>this.logoutFlag = false)
-      }
+          uid: this.uid!,
+          token: this.token!,
+        };
+        this.iLogin(loginData).then((res) => (this.logoutFlag = false));
+      };
     }
-    
   }
-  
-  private reconnect(){
-    if(this.lock) return;
+
+  private reconnect() {
+    if (this.lock) return;
     this.lock = true;
-    setTimeout(()=>{
+    setTimeout(() => {
       this.createWs();
       this.lock = false;
-    },2000)
+    }, 2000);
   }
 
   // private resetHeart(){
@@ -1351,5 +1376,4 @@ export default class OpenIMSDK extends Emitter {
   //     this.ws!.close;
   //   },60000)
   // }
-
 }
