@@ -1199,6 +1199,8 @@ export default class OpenIMSDK extends Emitter {
     };
     this.ws2promise.push(ws2p);
 
+    this.ws2promise = this.ws2promise.filter(wspp=>!wspp.flag)
+    
     if (this.platform == "web") {
       this.ws!.send(JSON.stringify(params));
       this.ws!.onmessage = (ev: MessageEvent<string>) => {
@@ -1224,10 +1226,11 @@ export default class OpenIMSDK extends Emitter {
         if (wspidx > -1) {
           if (data.errCode === 0) {
             this.ws2promise[wspidx].mrsve(data);
+            this.ws2promise[wspidx].flag=true;
           } else {
             this.ws2promise[wspidx].mrjet(data);
+            this.ws2promise[wspidx].flag=true;
           }
-          this.ws2promise.splice(wspidx, wspidx + 1);
         }
       };
     } else {
@@ -1270,10 +1273,11 @@ export default class OpenIMSDK extends Emitter {
             if (wspidx > -1) {
               if (data.errCode === 0) {
                 this.ws2promise[wspidx].mrsve(data);
+                this.ws2promise[wspidx].flag=true;
               } else {
                 this.ws2promise[wspidx].mrjet(data);
+                this.ws2promise[wspidx].flag=true;
               }
-              this.ws2promise.splice(wspidx, wspidx + 1);
             }
           });
         },
