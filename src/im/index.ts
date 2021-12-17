@@ -30,7 +30,7 @@ export type LoginParams = {
   token: string;
 };
 
-export type SelfInfo = {
+export type UserInfo = {
   name?: string;
   icon?: string;
   gender?: number;
@@ -231,7 +231,7 @@ export default class OpenIMSDK extends Emitter {
   private lock: boolean = false;
   private logoutFlag: boolean = false;
   private timer: number | undefined;
-  private ws2promise: Ws2Promise[] = [];
+  private ws2promise: Record<string, Ws2Promise> = {};
 
   constructor() {
     super();
@@ -249,6 +249,8 @@ export default class OpenIMSDK extends Emitter {
    * @returns
    */
   login(config: InitConfig) {
+    // console.log("call login::::");
+
     return new Promise<WsResponse>((resolve, reject) => {
       const { uid, token, url, platformID, operationID } = config;
       this.wsUrl = `${url}?sendID=${uid}&token=${token}&platformID=${platformID}`;
@@ -263,77 +265,45 @@ export default class OpenIMSDK extends Emitter {
         data: "",
         operationID: operationID || "",
       };
-      if (this.platform === "web") {
-        this.ws = new WebSocket(this.wsUrl);
 
-        this.ws.onopen = () => {
-          this.uid = uid;
-          this.token = token;
-          // console.log("once open:::");
+      const onOpen = () => {
+        this.uid = uid;
+        this.token = token;
+        // console.log("once open:::");
+        this.iLogin(loginData, operationID)
+          .then((res) => {
+            this.logoutFlag = false;
+            resolve(res);
+          })
+          .catch(() => {
+            errData.errCode = 111;
+            errData.errMsg = "ws connect failed...";
+            reject(errData);
+          });
+      };
 
-          this.iLogin(loginData, operationID)
-            .then((res) => {
-              this.logoutFlag = false;
-              resolve(res);
-            })
-            .catch((err) => {
-              reject(err);
-            });
-        };
+      const onClose = () => {
 
-        this.ws.onclose = () => {
-          errData.errCode = 111;
-          errData.errMsg = "ws connect failed...";
-          if (!this.logoutFlag) this.reconnect();
-          reject(errData);
-        };
+        errData.errCode = 111;
+        errData.errMsg = "ws connect failed...";
+        if (!this.logoutFlag) this.reconnect();
+        reject(errData);
+      }
 
-        this.ws.onerror = (err) => {
-          errData.errCode = 111;
-          errData.errMsg = "ws connect failed...";
-          reject(errData);
-        };
-      } else if (this.platform === "uni" || this.platform === "wx") {
-        this.ws =
-          this.platform === "uni"
-            ? //@ts-ignore
-              uni.connectSocket({
-                url: this.wsUrl,
-                complete: () => {},
-              })
-            : //@ts-ignore
-              wx.connectSocket({
-                url: this.wsUrl,
-                complete: () => {},
-              });
-        //@ts-ignore
-        this.ws.onOpen(() => {
-          this.uid = uid;
-          this.iLogin(loginData, operationID)
-            .then((res) => {
-              this.logoutFlag = false;
-              resolve(res);
-            })
-            .catch((err) => {
-              errData.errCode = 111;
-              errData.errMsg = "ws connect failed...";
-              reject(errData);
-            });
-        });
-        //@ts-ignore
-        this.ws.onClose(() => {
-          errData.errCode = 111;
-          errData.errMsg = "ws connect failed...";
-          if (!this.logoutFlag) this.reconnect();
-          reject(errData);
-        });
-        //@ts-ignore
-        this.ws.onError(() => {
-          errData.errCode = 111;
-          errData.errMsg = "ws connect failed...";
-          reject(errData);
-        });
-      } else {
+      const onError = (err: Error | Event) => {
+        console.log(err);
+        errData.errCode = 111;
+        errData.errMsg = "ws connect failed...";
+        reject(errData);
+      }
+
+      this.createWs(
+        onOpen,
+        onClose,
+        onError
+      )
+
+      if (!this.ws) {
         errData.errCode = 112;
         errData.errMsg = "The current platform is not supported...";
         reject(errData);
@@ -342,10 +312,9 @@ export default class OpenIMSDK extends Emitter {
   }
 
   private iLogin(data: LoginParams, operationID?: string) {
-    // console.log("cal iLogin::::");
 
     return new Promise<WsResponse>((resolve, reject) => {
-      const _uuid = operationID || uuid();
+      const _uuid = operationID || uuid(this.uid as string);
       const args = {
         reqFuncName: RequestFunc.LOGIN,
         operationID: _uuid,
@@ -358,7 +327,7 @@ export default class OpenIMSDK extends Emitter {
 
   logout(operationID?: string) {
     return new Promise<WsResponse>((resolve, reject) => {
-      const _uuid = operationID || uuid();
+      const _uuid = operationID || uuid(this.uid as string);
       const args = {
         reqFuncName: RequestFunc.LOGOUT,
         operationID: _uuid,
@@ -371,7 +340,7 @@ export default class OpenIMSDK extends Emitter {
 
   getLoginStatus = (operationID?: string) => {
     return new Promise<WsResponse>((resolve, reject) => {
-      const _uuid = operationID || uuid();
+      const _uuid = operationID || uuid(this.uid as string);
       const args = {
         reqFuncName: RequestFunc.GETLOGINSTATUS,
         operationID: _uuid,
@@ -384,7 +353,7 @@ export default class OpenIMSDK extends Emitter {
 
   getLoginUser = (operationID?: string) => {
     return new Promise<WsResponse>((resolve, reject) => {
-      const _uuid = operationID || uuid();
+      const _uuid = operationID || uuid(this.uid as string);
       const args = {
         reqFuncName: RequestFunc.GETLOGINUSER,
         operationID: _uuid,
@@ -397,7 +366,7 @@ export default class OpenIMSDK extends Emitter {
 
   getUsersInfo = (data: string[], operationID?: string) => {
     return new Promise<WsResponse>((resolve, reject) => {
-      const _uuid = operationID || uuid();
+      const _uuid = operationID || uuid(this.uid as string);
       const args = {
         reqFuncName: RequestFunc.GETUSERSINFO,
         operationID: _uuid,
@@ -408,9 +377,9 @@ export default class OpenIMSDK extends Emitter {
     });
   };
 
-  setSelfInfo = (data: SelfInfo, operationID?: string) => {
+  setSelfInfo = (data: UserInfo, operationID?: string) => {
     return new Promise<WsResponse>((resolve, reject) => {
-      const _uuid = operationID || uuid();
+      const _uuid = operationID || uuid(this.uid as string);
       const args = {
         reqFuncName: RequestFunc.SETSELFINFO,
         operationID: _uuid,
@@ -423,7 +392,7 @@ export default class OpenIMSDK extends Emitter {
 
   createTextMessage = (data: string, operationID?: string) => {
     return new Promise<WsResponse>((resolve, reject) => {
-      const _uuid = operationID || uuid();
+      const _uuid = operationID || uuid(this.uid as string);
       const args = {
         reqFuncName: RequestFunc.CREATETEXTMESSAGE,
         operationID: _uuid,
@@ -438,7 +407,7 @@ export default class OpenIMSDK extends Emitter {
     return new Promise<WsResponse>((resolve, reject) => {
       const tmp: any = data;
       tmp.atUserList = JSON.stringify(tmp.atUserList);
-      const _uuid = operationID || uuid();
+      const _uuid = operationID || uuid(this.uid as string);
       const args = {
         reqFuncName: RequestFunc.CREATETEXTATMESSAGE,
         operationID: _uuid,
@@ -451,7 +420,7 @@ export default class OpenIMSDK extends Emitter {
 
   createImageMessage = (data: ImageMsgParams, operationID?: string) => {
     return new Promise<WsResponse>((resolve, reject) => {
-      const _uuid = operationID || uuid();
+      const _uuid = operationID || uuid(this.uid as string);
       let tmp: any = data;
       tmp.bigPicture = JSON.stringify(tmp.bigPicture);
       tmp.snapshotPicture = JSON.stringify(tmp.snapshotPicture);
@@ -468,7 +437,7 @@ export default class OpenIMSDK extends Emitter {
 
   createSoundMessage = (data: SoundMsgParams, operationID?: string) => {
     return new Promise<WsResponse>((resolve, reject) => {
-      const _uuid = operationID || uuid();
+      const _uuid = operationID || uuid(this.uid as string);
       let tmp = {
         soundBaseInfo: JSON.stringify(data),
       };
@@ -484,7 +453,7 @@ export default class OpenIMSDK extends Emitter {
 
   createVideoMessage = (data: VideoMsgParams, operationID?: string) => {
     return new Promise<WsResponse>((resolve, reject) => {
-      const _uuid = operationID || uuid();
+      const _uuid = operationID || uuid(this.uid as string);
       let tmp = {
         videoBaseInfo: JSON.stringify(data),
       };
@@ -500,7 +469,7 @@ export default class OpenIMSDK extends Emitter {
 
   createFileMessage = (data: FileMsgParams, operationID?: string) => {
     return new Promise<WsResponse>((resolve, reject) => {
-      const _uuid = operationID || uuid();
+      const _uuid = operationID || uuid(this.uid as string);
       let tmp = {
         fileBaseInfo: JSON.stringify(data),
       };
@@ -516,7 +485,7 @@ export default class OpenIMSDK extends Emitter {
 
   createMergerMessage = (data: MergerMsgParams, operationID?: string) => {
     return new Promise<WsResponse>((resolve, reject) => {
-      const _uuid = operationID || uuid();
+      const _uuid = operationID || uuid(this.uid as string);
       let tmp: any = data;
       tmp.messageList = JSON.stringify(data.messageList);
       tmp.summaryList = JSON.stringify(data.summaryList);
@@ -532,7 +501,7 @@ export default class OpenIMSDK extends Emitter {
 
   createForwardMessage = (data: string, operationID?: string) => {
     return new Promise<WsResponse>((resolve, reject) => {
-      const _uuid = operationID || uuid();
+      const _uuid = operationID || uuid(this.uid as string);
       const args = {
         reqFuncName: RequestFunc.CREATEFORWARDMESSAGE,
         operationID: _uuid,
@@ -545,7 +514,7 @@ export default class OpenIMSDK extends Emitter {
 
   createLocationMessage = (data: LocationMsgParams, operationID?: string) => {
     return new Promise<WsResponse>((resolve, reject) => {
-      const _uuid = operationID || uuid();
+      const _uuid = operationID || uuid(this.uid as string);
       const args = {
         reqFuncName: RequestFunc.CREATELOCATIONMESSAGE,
         operationID: _uuid,
@@ -558,7 +527,7 @@ export default class OpenIMSDK extends Emitter {
 
   createCustomMessage = (data: CustomMsgParams, operationID?: string) => {
     return new Promise<WsResponse>((resolve, reject) => {
-      const _uuid = operationID || uuid();
+      const _uuid = operationID || uuid(this.uid as string);
       const args = {
         reqFuncName: RequestFunc.CREATECUSTOMMESSAGE,
         operationID: _uuid,
@@ -571,7 +540,7 @@ export default class OpenIMSDK extends Emitter {
 
   createQuoteMessage = (data: QuoteMsgParams, operationID?: string) => {
     return new Promise<WsResponse>((resolve, reject) => {
-      const _uuid = operationID || uuid();
+      const _uuid = operationID || uuid(this.uid as string);
       const args = {
         reqFuncName: RequestFunc.CREATEQUOTEMESSAGE,
         operationID: _uuid,
@@ -582,9 +551,22 @@ export default class OpenIMSDK extends Emitter {
     });
   };
 
+  createCardMessage = (data:string,operationID?: string) => {
+    return new Promise<WsResponse>((resolve, reject) => {
+      const _uuid = operationID || uuid(this.uid as string);
+      const args = {
+        reqFuncName: RequestFunc.CREATECARDMESSAGE,
+        operationID: _uuid,
+        uid: this.uid,
+        data,
+      };
+      this.wsSend(args, resolve, reject);
+    });
+  }
+
   sendMessage = (data: SendMsgParams, operationID?: string) => {
     return new Promise<WsResponse>((resolve, reject) => {
-      const _uuid = operationID || uuid();
+      const _uuid = operationID || uuid(this.uid as string);
       const args = {
         reqFuncName: RequestFunc.SENDMESSAGE,
         operationID: _uuid,
@@ -597,7 +579,7 @@ export default class OpenIMSDK extends Emitter {
 
   sendMessageNotOss = (data: SendMsgParams, operationID?: string) => {
     return new Promise<WsResponse>((resolve, reject) => {
-      const _uuid = operationID || uuid();
+      const _uuid = operationID || uuid(this.uid as string);
       let tmp: any = Object.assign({}, data);
       tmp.receiver = data.recvID;
       delete tmp.recvID;
@@ -613,7 +595,7 @@ export default class OpenIMSDK extends Emitter {
 
   getHistoryMessageList = (data: GetHistoryMsgParams, operationID?: string) => {
     return new Promise<WsResponse>((resolve, reject) => {
-      const _uuid = operationID || uuid();
+      const _uuid = operationID || uuid(this.uid as string);
       const args = {
         reqFuncName: RequestFunc.GETHISTORYMESSAGELIST,
         operationID: _uuid,
@@ -627,7 +609,7 @@ export default class OpenIMSDK extends Emitter {
 
   revokeMessage = (data: string, operationID?: string) => {
     return new Promise<WsResponse>((resolve, reject) => {
-      const _uuid = operationID || uuid();
+      const _uuid = operationID || uuid(this.uid as string);
       const args = {
         reqFuncName: RequestFunc.REVOKEMESSAGE,
         operationID: _uuid,
@@ -640,7 +622,7 @@ export default class OpenIMSDK extends Emitter {
 
   deleteMessageFromLocalStorage = (data: string, operationID?: string) => {
     return new Promise<WsResponse>((resolve, reject) => {
-      const _uuid = operationID || uuid();
+      const _uuid = operationID || uuid(this.uid as string);
       const args = {
         reqFuncName: RequestFunc.DELETEMESSAGEFROMLOCALSTORAGE,
         operationID: _uuid,
@@ -653,7 +635,7 @@ export default class OpenIMSDK extends Emitter {
 
   markSingleMessageHasRead = (data: string, operationID?: string) => {
     return new Promise<WsResponse>((resolve, reject) => {
-      const _uuid = operationID || uuid();
+      const _uuid = operationID || uuid(this.uid as string);
       const args = {
         reqFuncName: RequestFunc.MARKSINGLEMESSAGEHASREAD,
         operationID: _uuid,
@@ -666,7 +648,7 @@ export default class OpenIMSDK extends Emitter {
 
   markGroupMessageHasRead = (data: string, operationID?: string) => {
     return new Promise<WsResponse>((resolve, reject) => {
-      const _uuid = operationID || uuid();
+      const _uuid = operationID || uuid(this.uid as string);
       const args = {
         reqFuncName: RequestFunc.MARKGROUPMESSAGEHASREAD,
         operationID: _uuid,
@@ -682,7 +664,7 @@ export default class OpenIMSDK extends Emitter {
     operationID?: string
   ) => {
     return new Promise<WsResponse>((resolve, reject) => {
-      const _uuid = operationID || uuid();
+      const _uuid = operationID || uuid(this.uid as string);
       const args = {
         reqFuncName: RequestFunc.INSERTSINGLEMESSAGETOLOCALSTORAGE,
         operationID: _uuid,
@@ -695,7 +677,7 @@ export default class OpenIMSDK extends Emitter {
 
   findMessages = (data: string[], operationID?: string) => {
     return new Promise<WsResponse>((resolve, reject) => {
-      const _uuid = operationID || uuid();
+      const _uuid = operationID || uuid(this.uid as string);
       const args = {
         reqFuncName: RequestFunc.FINDMESSAGES,
         operationID: _uuid,
@@ -708,7 +690,7 @@ export default class OpenIMSDK extends Emitter {
 
   typingStatusUpdate = (data: TypingUpdateParams, operationID?: string) => {
     return new Promise<WsResponse>((resolve, reject) => {
-      const _uuid = operationID || uuid();
+      const _uuid = operationID || uuid(this.uid as string);
       const args = {
         reqFuncName: RequestFunc.TYPINGSTATUSUPDATE,
         operationID: _uuid,
@@ -723,7 +705,7 @@ export default class OpenIMSDK extends Emitter {
     return new Promise<WsResponse>((resolve, reject) => {
       let tmp: any = data;
       tmp.msgIDList = JSON.stringify(tmp.msgIDList);
-      const _uuid = operationID || uuid();
+      const _uuid = operationID || uuid(this.uid as string);
       const args = {
         reqFuncName: RequestFunc.MARKC2CMESSAGEASREAD,
         operationID: _uuid,
@@ -736,7 +718,7 @@ export default class OpenIMSDK extends Emitter {
 
   getAllConversationList = (operationID?: string) => {
     return new Promise<WsResponse>((resolve, reject) => {
-      const _uuid = operationID || uuid();
+      const _uuid = operationID || uuid(this.uid as string);
       const args = {
         reqFuncName: RequestFunc.GETALLCONVERSATIONLIST,
         operationID: _uuid,
@@ -749,7 +731,7 @@ export default class OpenIMSDK extends Emitter {
 
   getOneConversation = (data: GetOneCveParams, operationID?: string) => {
     return new Promise<WsResponse>((resolve, reject) => {
-      const _uuid = operationID || uuid();
+      const _uuid = operationID || uuid(this.uid as string);
       const args = {
         reqFuncName: RequestFunc.GETONECONVERSATION,
         operationID: _uuid,
@@ -762,7 +744,7 @@ export default class OpenIMSDK extends Emitter {
 
   getMultipleConversation = (data: string[], operationID?: string) => {
     return new Promise<WsResponse>((resolve, reject) => {
-      const _uuid = operationID || uuid();
+      const _uuid = operationID || uuid(this.uid as string);
       const args = {
         reqFuncName: RequestFunc.GETMULTIPLECONVERSATION,
         operationID: _uuid,
@@ -775,7 +757,7 @@ export default class OpenIMSDK extends Emitter {
 
   deleteConversation = (data: string, operationID?: string) => {
     return new Promise<WsResponse>((resolve, reject) => {
-      const _uuid = operationID || uuid();
+      const _uuid = operationID || uuid(this.uid as string);
       const args = {
         reqFuncName: RequestFunc.DELETECONVERSATION,
         operationID: _uuid,
@@ -788,7 +770,7 @@ export default class OpenIMSDK extends Emitter {
 
   setConversationDraft = (data: SetDraftParams, operationID?: string) => {
     return new Promise<WsResponse>((resolve, reject) => {
-      const _uuid = operationID || uuid();
+      const _uuid = operationID || uuid(this.uid as string);
       const args = {
         reqFuncName: RequestFunc.SETCONVERSATIONDRAFT,
         operationID: _uuid,
@@ -801,7 +783,7 @@ export default class OpenIMSDK extends Emitter {
 
   pinConversation = (data: PinCveParams, operationID?: string) => {
     return new Promise<WsResponse>((resolve, reject) => {
-      const _uuid = operationID || uuid();
+      const _uuid = operationID || uuid(this.uid as string);
       const args = {
         reqFuncName: RequestFunc.PINCONVERSATION,
         operationID: _uuid,
@@ -814,7 +796,7 @@ export default class OpenIMSDK extends Emitter {
 
   getTotalUnreadMsgCount = (operationID?: string) => {
     return new Promise<WsResponse>((resolve, reject) => {
-      const _uuid = operationID || uuid();
+      const _uuid = operationID || uuid(this.uid as string);
       const args = {
         reqFuncName: RequestFunc.GETTOTALUNREADMSGCOUNT,
         operationID: _uuid,
@@ -827,7 +809,7 @@ export default class OpenIMSDK extends Emitter {
 
   addFriend = (data: AddFriendParams, operationID?: string) => {
     return new Promise<WsResponse>((resolve, reject) => {
-      const _uuid = operationID || uuid();
+      const _uuid = operationID || uuid(this.uid as string);
       const args = {
         reqFuncName: RequestFunc.ADDFRIEND,
         operationID: _uuid,
@@ -840,7 +822,7 @@ export default class OpenIMSDK extends Emitter {
 
   getFriendsInfo = (data: string[], operationID?: string) => {
     return new Promise<WsResponse>((resolve, reject) => {
-      const _uuid = operationID || uuid();
+      const _uuid = operationID || uuid(this.uid as string);
       const args = {
         reqFuncName: RequestFunc.GETFRIENDSINFO,
         operationID: _uuid,
@@ -853,7 +835,7 @@ export default class OpenIMSDK extends Emitter {
 
   getFriendApplicationList = (operationID?: string) => {
     return new Promise<WsResponse>((resolve, reject) => {
-      const _uuid = operationID || uuid();
+      const _uuid = operationID || uuid(this.uid as string);
       const args = {
         reqFuncName: RequestFunc.GETFRIENDAPPLICATIONLIST,
         operationID: _uuid,
@@ -866,7 +848,7 @@ export default class OpenIMSDK extends Emitter {
 
   getFriendList = (operationID?: string) => {
     return new Promise<WsResponse>((resolve, reject) => {
-      const _uuid = operationID || uuid();
+      const _uuid = operationID || uuid(this.uid as string);
       const args = {
         reqFuncName: RequestFunc.GETFRIENDLIST,
         operationID: _uuid,
@@ -879,7 +861,7 @@ export default class OpenIMSDK extends Emitter {
 
   setFriendInfo = (data: SetFriendParams, operationID?: string) => {
     return new Promise<WsResponse>((resolve, reject) => {
-      const _uuid = operationID || uuid();
+      const _uuid = operationID || uuid(this.uid as string);
       const args = {
         reqFuncName: RequestFunc.SETFRIENDINFO,
         operationID: _uuid,
@@ -892,7 +874,7 @@ export default class OpenIMSDK extends Emitter {
 
   checkFriend = (data: string[], operationID?: string) => {
     return new Promise<WsResponse>((resolve, reject) => {
-      const _uuid = operationID || uuid();
+      const _uuid = operationID || uuid(this.uid as string);
       const args = {
         reqFuncName: RequestFunc.CHECKFRIEND,
         operationID: _uuid,
@@ -905,7 +887,7 @@ export default class OpenIMSDK extends Emitter {
 
   acceptFriendApplication = (data: string, operationID?: string) => {
     return new Promise<WsResponse>((resolve, reject) => {
-      const _uuid = operationID || uuid();
+      const _uuid = operationID || uuid(this.uid as string);
       const args = {
         reqFuncName: RequestFunc.ACCEPTFRIENDAPPLICATION,
         operationID: _uuid,
@@ -918,7 +900,7 @@ export default class OpenIMSDK extends Emitter {
 
   refuseFriendApplication = (data: string, operationID?: string) => {
     return new Promise<WsResponse>((resolve, reject) => {
-      const _uuid = operationID || uuid();
+      const _uuid = operationID || uuid(this.uid as string);
       const args = {
         reqFuncName: RequestFunc.REFUSEFRIENDAPPLICATION,
         operationID: _uuid,
@@ -931,7 +913,7 @@ export default class OpenIMSDK extends Emitter {
 
   deleteFromFriendList = (data: string, operationID?: string) => {
     return new Promise<WsResponse>((resolve, reject) => {
-      const _uuid = operationID || uuid();
+      const _uuid = operationID || uuid(this.uid as string);
       const args = {
         reqFuncName: RequestFunc.DELETEFROMFRIENDLIST,
         operationID: _uuid,
@@ -944,7 +926,7 @@ export default class OpenIMSDK extends Emitter {
 
   addToBlackList = (data: string, operationID?: string) => {
     return new Promise<WsResponse>((resolve, reject) => {
-      const _uuid = operationID || uuid();
+      const _uuid = operationID || uuid(this.uid as string);
       const args = {
         reqFuncName: RequestFunc.ADDTOBLACKLIST,
         operationID: _uuid,
@@ -957,7 +939,7 @@ export default class OpenIMSDK extends Emitter {
 
   deleteFromBlackList = (data: string, operationID?: string) => {
     return new Promise<WsResponse>((resolve, reject) => {
-      const _uuid = operationID || uuid();
+      const _uuid = operationID || uuid(this.uid as string);
       const args = {
         reqFuncName: RequestFunc.DELETEFROMBLACKLIST,
         operationID: _uuid,
@@ -970,7 +952,7 @@ export default class OpenIMSDK extends Emitter {
 
   getBlackList = (operationID?: string) => {
     return new Promise<WsResponse>((resolve, reject) => {
-      const _uuid = operationID || uuid();
+      const _uuid = operationID || uuid(this.uid as string);
       const args = {
         reqFuncName: RequestFunc.GETBLACKLIST,
         operationID: _uuid,
@@ -983,7 +965,7 @@ export default class OpenIMSDK extends Emitter {
 
   inviteUserToGroup = (data: InviteGroupParams, operationID?: string) => {
     return new Promise<WsResponse>((resolve, reject) => {
-      const _uuid = operationID || uuid();
+      const _uuid = operationID || uuid(this.uid as string);
       const tmp: any = data;
       tmp.userList = JSON.stringify(tmp.userList);
       const args = {
@@ -998,7 +980,7 @@ export default class OpenIMSDK extends Emitter {
 
   kickGroupMember = (data: InviteGroupParams, operationID?: string) => {
     return new Promise<WsResponse>((resolve, reject) => {
-      const _uuid = operationID || uuid();
+      const _uuid = operationID || uuid(this.uid as string);
       const tmp: any = data;
       tmp.userList = JSON.stringify(tmp.userList);
       const args = {
@@ -1016,7 +998,7 @@ export default class OpenIMSDK extends Emitter {
     operationID?: string
   ) => {
     return new Promise<WsResponse>((resolve, reject) => {
-      const _uuid = operationID || uuid();
+      const _uuid = operationID || uuid(this.uid as string);
       const tmp: any = data;
       tmp.userList = JSON.stringify(tmp.userList);
       const args = {
@@ -1031,7 +1013,7 @@ export default class OpenIMSDK extends Emitter {
 
   getGroupMemberList = (data: GetGroupMemberParams, operationID?: string) => {
     return new Promise<WsResponse>((resolve, reject) => {
-      const _uuid = operationID || uuid();
+      const _uuid = operationID || uuid(this.uid as string);
       const args = {
         reqFuncName: RequestFunc.GETGROUPMEMBERLIST,
         operationID: _uuid,
@@ -1044,7 +1026,7 @@ export default class OpenIMSDK extends Emitter {
 
   getJoinedGroupList = (operationID?: string) => {
     return new Promise<WsResponse>((resolve, reject) => {
-      const _uuid = operationID || uuid();
+      const _uuid = operationID || uuid(this.uid as string);
       const args = {
         reqFuncName: RequestFunc.GETJOINEDGROUPLIST,
         operationID: _uuid,
@@ -1057,7 +1039,7 @@ export default class OpenIMSDK extends Emitter {
 
   createGroup = (data: CreateGroupParams, operationID?: string) => {
     return new Promise<WsResponse>((resolve, reject) => {
-      const _uuid = operationID || uuid();
+      const _uuid = operationID || uuid(this.uid as string);
       const tmp: any = data;
       tmp.gInfo = JSON.stringify(tmp.gInfo);
       tmp.memberList = JSON.stringify(tmp.memberList);
@@ -1073,7 +1055,7 @@ export default class OpenIMSDK extends Emitter {
 
   setGroupInfo = (data: GroupInfo, operationID?: string) => {
     return new Promise<WsResponse>((resolve, reject) => {
-      const _uuid = operationID || uuid();
+      const _uuid = operationID || uuid(this.uid as string);
       const args = {
         reqFuncName: RequestFunc.SETGROUPINFO,
         operationID: _uuid,
@@ -1088,7 +1070,7 @@ export default class OpenIMSDK extends Emitter {
 
   getGroupsInfo = (data: string[], operationID?: string) => {
     return new Promise<WsResponse>((resolve, reject) => {
-      const _uuid = operationID || uuid();
+      const _uuid = operationID || uuid(this.uid as string);
       const tmp = {
         groupIdList: JSON.stringify(data),
       };
@@ -1104,7 +1086,7 @@ export default class OpenIMSDK extends Emitter {
 
   joinGroup = (data: joinGroupParams, operationID?: string) => {
     return new Promise<WsResponse>((resolve, reject) => {
-      const _uuid = operationID || uuid();
+      const _uuid = operationID || uuid(this.uid as string);
       const args = {
         reqFuncName: RequestFunc.JOINGROUP,
         operationID: _uuid,
@@ -1117,7 +1099,7 @@ export default class OpenIMSDK extends Emitter {
 
   quitGroup = (data: string, operationID?: string) => {
     return new Promise<WsResponse>((resolve, reject) => {
-      const _uuid = operationID || uuid();
+      const _uuid = operationID || uuid(this.uid as string);
       const args = {
         reqFuncName: RequestFunc.QUITGROUP,
         operationID: _uuid,
@@ -1130,7 +1112,7 @@ export default class OpenIMSDK extends Emitter {
 
   transferGroupOwner = (data: TransferGroupParams, operationID?: string) => {
     return new Promise<WsResponse>((resolve, reject) => {
-      const _uuid = operationID || uuid();
+      const _uuid = operationID || uuid(this.uid as string);
       const args = {
         reqFuncName: RequestFunc.TRANSFERGROUPOWNER,
         operationID: _uuid,
@@ -1143,7 +1125,7 @@ export default class OpenIMSDK extends Emitter {
 
   getGroupApplicationList = (operationID?: string) => {
     return new Promise<WsResponse>((resolve, reject) => {
-      const _uuid = operationID || uuid();
+      const _uuid = operationID || uuid(this.uid as string);
       const args = {
         reqFuncName: RequestFunc.GETGROUPAPPLICATIONLIST,
         operationID: _uuid,
@@ -1156,7 +1138,7 @@ export default class OpenIMSDK extends Emitter {
 
   acceptGroupApplication = (data: AccessGroupParams, operationID?: string) => {
     return new Promise<WsResponse>((resolve, reject) => {
-      const _uuid = operationID || uuid();
+      const _uuid = operationID || uuid(this.uid as string);
       const args = {
         reqFuncName: RequestFunc.ACCEPTGROUPAPPLICATION,
         operationID: _uuid,
@@ -1169,7 +1151,7 @@ export default class OpenIMSDK extends Emitter {
 
   refuseGroupApplication = (data: AccessGroupParams, operationID?: string) => {
     return new Promise<WsResponse>((resolve, reject) => {
-      const _uuid = operationID || uuid();
+      const _uuid = operationID || uuid(this.uid as string);
       const args = {
         reqFuncName: RequestFunc.REFUSEGROUPAPPLICATION,
         operationID: _uuid,
@@ -1187,52 +1169,58 @@ export default class OpenIMSDK extends Emitter {
     resolve: (value: WsResponse | PromiseLike<WsResponse>) => void,
     reject: (reason?: any) => void
   ) => {
-    if (typeof params.data === "object")
+    if(this.ws===undefined){
+      let errData: WsResponse = {
+        event: params.reqFuncName,
+        errCode: 112,
+        errMsg: "ws conect failed...",
+        data: "",
+        operationID: params.operationID || "",
+      };
+      reject(errData)
+    }
+    if (typeof params.data === "object") {
       params.data = JSON.stringify(params.data);
+    }
 
     const ws2p = {
-      oid: params.operationID,
+      oid: params.operationID || uuid(this.uid as string),
       mname: params.reqFuncName,
       mrsve: resolve,
       mrjet: reject,
       flag: false,
     };
-    this.ws2promise.push(ws2p);
 
-    this.ws2promise = this.ws2promise.filter(wspp=>!wspp.flag)
-    
+    this.ws2promise[ws2p.oid] = ws2p;
+
+    const handleMessage = (ev: MessageEvent<string>) => {
+      const data = JSON.parse(ev.data);
+
+      if ((CbEvents as Record<string, string>)[data.event.toUpperCase()]) {
+        this.emit(data.event, data);
+      }
+
+      if (params.reqFuncName === RequestFunc.LOGOUT) {
+        this.logoutFlag = true;
+        this.ws!.close();
+        this.ws = undefined;
+      }
+
+      const callbackJob = this.ws2promise[data.operationID];
+      if (!callbackJob) {
+        return
+      }
+      if (data.errCode === 0) {
+        callbackJob.mrsve(data);
+      } else {
+        callbackJob.mrjet(data);
+      }
+      delete this.ws2promise[data.operationID];
+    }
+
     if (this.platform == "web") {
       this.ws!.send(JSON.stringify(params));
-      this.ws!.onmessage = (ev: MessageEvent<string>) => {
-        const data = JSON.parse(ev.data);
-
-        if (
-          Object.prototype.hasOwnProperty.call(
-            CbEvents,
-            data.event.toUpperCase()
-          )
-        )
-          this.emit(data.event, data);
-
-        if (params.reqFuncName === RequestFunc.LOGOUT) {
-          this.logoutFlag = true;
-          this.ws!.close();
-          this.ws = undefined;
-        }
-
-        const wspidx = this.ws2promise.findIndex(
-          (wsp) => wsp.oid === data.operationID
-        );
-        if (wspidx > -1) {
-          if (data.errCode === 0) {
-            this.ws2promise[wspidx].mrsve(data);
-            this.ws2promise[wspidx].flag=true;
-          } else {
-            this.ws2promise[wspidx].mrjet(data);
-            this.ws2promise[wspidx].flag=true;
-          }
-        }
-      };
+      this.ws!.onmessage = handleMessage;
     } else {
       this.ws!.send({
         //@ts-ignore
@@ -1249,39 +1237,10 @@ export default class OpenIMSDK extends Emitter {
             //@ts-ignore
             this.ws!._callbacks.message = [];
           }
-          //@ts-ignore
-          this.ws!.onMessage((ev) => {
-            const data = JSON.parse(ev.data);
-
-            if (
-              Object.prototype.hasOwnProperty.call(
-                CbEvents,
-                data.event.toUpperCase()
-              )
-            )
-              this.emit(data.event, data);
-
-            if (params.reqFuncName === RequestFunc.LOGOUT) {
-              this.logoutFlag = true;
-              this.ws!.close();
-              this.ws = undefined;
-            }
-
-            const wspidx = this.ws2promise.findIndex(
-              (wsp) => wsp.oid === data.operationID
-            );
-            if (wspidx > -1) {
-              if (data.errCode === 0) {
-                this.ws2promise[wspidx].mrsve(data);
-                this.ws2promise[wspidx].flag=true;
-              } else {
-                this.ws2promise[wspidx].mrjet(data);
-                this.ws2promise[wspidx].flag=true;
-              }
-            }
-          });
         },
       });
+      //@ts-ignore
+      this.ws!.onMessage(handleMessage);
     }
   };
 
@@ -1291,75 +1250,72 @@ export default class OpenIMSDK extends Emitter {
     const uflag = typeof uni;
     //@ts-ignore
     const xflag = typeof wx;
-    if (wflag === "undefined") {
-      if (uflag === "object" && xflag === "object") {
-        this.platform = "uni";
-      } else if (uflag !== "object" && xflag === "object") {
-        this.platform = "wx";
-      } else {
-        this.platform = "unknow";
-      }
+
+    if (wflag !== "undefined") {
+      this.platform = "web"
+      return
+    }
+
+    if (uflag === "object" && xflag !== "object") {
+      this.platform = "uni";
+    } else if (uflag !== "object" && xflag === "object") {
+      this.platform = "wx";
     } else {
-      this.platform = "web";
+      this.platform = "unknow";
     }
   }
 
-  private createWs() {
+  private createWs(_onOpen?: Function, _onClose?: Function, _onError?: Function) {
+    // console.log("call createWs:::");
+
+    let onOpen: any = () => {
+      const loginData = {
+        uid: this.uid!,
+        token: this.token!,
+      };
+      this.iLogin(loginData).then((res) => (this.logoutFlag = false));
+    }
+
+    if (_onOpen) {
+      onOpen = _onOpen
+    }
+
+    let onClose: any = () => {
+      // console.log("ws close agin:::");
+      if (!this.logoutFlag) {
+        this.reconnect();
+      }
+    }
+
+    if (_onClose) {
+      onClose = _onClose
+    }
+
+    let onError: any = () => {}
+    if (_onError) {
+      onError = _onError
+    }
+
     if (this.platform === "web") {
       this.ws = new WebSocket(this.wsUrl);
-      this.ws.onclose = () => {
-        // console.log("ws onclose");
-
-        if (!this.logoutFlag) this.reconnect();
-      };
-      this.ws.onopen = () => {
-        // console.log("ws onopen::::");
-
-        // this.resetHeart();
-        // this.startHeart();
-        const loginData = {
-          uid: this.uid!,
-          token: this.token!,
-        };
-        this.iLogin(loginData).then((res) => (this.logoutFlag = false));
-      };
-    } else if (this.platform === "uni") {
-      //@ts-ignore
-      this.ws = uni.connectSocket({
-        url: this.wsUrl,
-        complete: () => {},
-      });
-      //@ts-ignore
-      this.ws.onClose = () => {
-        if (!this.logoutFlag) this.reconnect();
-      };
-      //@ts-ignore
-      this.ws.onOpen = () => {
-        const loginData = {
-          uid: this.uid!,
-          token: this.token!,
-        };
-        this.iLogin(loginData).then((res) => (this.logoutFlag = false));
-      };
-    } else if (this.platform === "wx") {
-      //@ts-ignore
-      this.ws = wx.connectSocket({
-        url: this.wsUrl,
-        complete: () => {},
-      });
-      //@ts-ignore
-      this.ws.onClose = () => {
-        if (!this.logoutFlag) this.reconnect();
-      };
-      //@ts-ignore
-      this.ws.onOpen = () => {
-        const loginData = {
-          uid: this.uid!,
-          token: this.token!,
-        };
-        this.iLogin(loginData).then((res) => (this.logoutFlag = false));
-      };
+      this.ws.onclose = onClose;
+      this.ws.onopen = onOpen;
+      this.ws.onerror = onError
+      return
     }
+
+    // @ts-ignore
+    const platformNamespace = this.platform === "uni" ? uni : wx
+    this.ws = platformNamespace.connectSocket({
+      url: this.wsUrl,
+      complete: () => {},
+    })
+    //@ts-ignore
+    this.ws.onClose(onClose);
+    //@ts-ignore
+    this.ws.onOpen(onOpen);
+    //@ts-ignore
+    this.ws.onError(onError);
   }
 
   private reconnect() {
