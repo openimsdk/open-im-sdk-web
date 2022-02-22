@@ -1,6 +1,5 @@
 import { CbEvents } from "../constants";
-import { WsResponse } from "../im";
-
+import { WsResponse } from "../types";
 
 interface Events {
     [key:string]:Cbfn[]
@@ -26,6 +25,7 @@ class Emitter {
     on(event:CbEvents, fn:Cbfn) {
       if (this.events[event]) this.events[event].push(fn);
       else this.events[event] = [fn];
+      
       return this;
     }
   

@@ -33,7 +33,7 @@ Open im includes instant messaging and real-time audio and video server and clie
 
   ```typescript
   const config: InitConfig = {
-    uid: "xxx",
+    userID: "xxx",
     token: "xxx",
     url: "xxx",
     platformID: 5,
@@ -54,7 +54,6 @@ Open im includes instant messaging and real-time audio and video server and clie
   	const params = {
   	  recvID: "xxx",
   	  groupID: "",
-  	  onlineUserOnly: false,
   	  message: data.data,
   	};
   	openIM.sendMessage(params);
@@ -62,14 +61,8 @@ Open im includes instant messaging and real-time audio and video server and clie
   
   //You can listen to the message sending status and handle it in the callback function
   const msgListener = () => {
-    openIM.on(CbEvents.SENDMSGPROGRESS,data => {
-      //Message sending progress...
-    })
-    openIM.on(CbEvents.SENDMSGSUCCESS,data => {
-      //Message sent successfully...
-    })
-    openIM.on(CbEvents.SENDMSGERROR,data => {
-      //Message sent failed...
+    openIM.on(CbEvents.ONRECVNEWMESSAGE,data => {
+      // receive new message...
     })
   }
   ```
