@@ -49,7 +49,6 @@ export default class OpenIMSDK extends Emitter {
   private wsUrl: string = "";
   private lock: boolean = false;
   private logoutFlag: boolean = false;
-  private timer: number | undefined;
   private ws2promise: Record<string, Ws2Promise> = {};
   private onceFlag: boolean = true;
 
@@ -100,17 +99,17 @@ export default class OpenIMSDK extends Emitter {
       };
 
       const onClose = () => {
-        // errData.errCode = 111;
-        // errData.errMsg = "ws connect failed...";
-        // if (!this.logoutFlag) this.reconnect();
-        // reject(errData);
+        errData.errCode = 111;
+        errData.errMsg = "ws connect close...";
+        if (!this.logoutFlag) this.reconnect();
+        reject(errData);
       };
 
       const onError = (err: Error | Event) => {
         console.log(err);
-        errData.errCode = 111;
-        errData.errMsg = "ws connect failed...";
-        if (!this.logoutFlag) this.reconnect();
+        errData.errCode = 112;
+        errData.errMsg = "ws connect error...";
+        // if (!this.logoutFlag) this.reconnect();
         reject(errData);
       };
 
@@ -393,7 +392,7 @@ export default class OpenIMSDK extends Emitter {
     return new Promise<WsResponse>((resolve, reject) => {
       const _uuid = operationID || uuid(this.uid as string);
       const tmp: any = data;
-      tmp.offlinePushInfo = tmp.offlinePushInfo? JSON.stringify(data.offlinePushInfo) : ""
+      tmp.offlinePushInfo = tmp.offlinePushInfo ? JSON.stringify(data.offlinePushInfo) : "";
       const args = {
         reqFuncName: RequestFunc.SENDMESSAGE,
         operationID: _uuid,
@@ -408,7 +407,7 @@ export default class OpenIMSDK extends Emitter {
     return new Promise<WsResponse>((resolve, reject) => {
       const _uuid = operationID || uuid(this.uid as string);
       const tmp: any = data;
-      tmp.offlinePushInfo = tmp.offlinePushInfo? JSON.stringify(data.offlinePushInfo) : ""
+      tmp.offlinePushInfo = tmp.offlinePushInfo ? JSON.stringify(data.offlinePushInfo) : "";
       const args = {
         reqFuncName: RequestFunc.SENDMESSAGENOTOSS,
         operationID: _uuid,
@@ -451,19 +450,6 @@ export default class OpenIMSDK extends Emitter {
       const _uuid = operationID || uuid(this.uid as string);
       const args = {
         reqFuncName: RequestFunc.DELETEMESSAGEFROMLOCALSTORAGE,
-        operationID: _uuid,
-        userID: this.uid,
-        data,
-      };
-      this.wsSend(args, resolve, reject);
-    });
-  };
-
-  markSingleMessageHasRead = (data: string, operationID?: string) => {
-    return new Promise<WsResponse>((resolve, reject) => {
-      const _uuid = operationID || uuid(this.uid as string);
-      const args = {
-        reqFuncName: RequestFunc.MARKSINGLEMESSAGEHASREAD,
         operationID: _uuid,
         userID: this.uid,
         data,
@@ -682,14 +668,14 @@ export default class OpenIMSDK extends Emitter {
     });
   };
 
-  getConversationRecvMessageOpt = (conversationIDList: string[], operationID?: string) => {
+  getConversationRecvMessageOpt = (data: string[], operationID?: string) => {
     return new Promise<WsResponse>((resolve, reject) => {
       const _uuid = operationID || uuid(this.uid as string);
       const args = {
         reqFuncName: RequestFunc.GETCONVERSATIONRECVMESSAGEOPT,
         operationID: _uuid,
         userID: this.uid,
-        data: "",
+        data,
       };
       this.wsSend(args, resolve, reject);
     });
@@ -1154,11 +1140,7 @@ export default class OpenIMSDK extends Emitter {
 
     if (this.platform == "web") {
       this.ws!.send(JSON.stringify(params));
-
-      if (this.onceFlag) {
-        this.ws!.onmessage = handleMessage;
-        this.onceFlag = false;
-      }
+      this.ws!.onmessage = handleMessage;
     } else {
       this.ws!.send({
         //@ts-ignore
@@ -1210,7 +1192,7 @@ export default class OpenIMSDK extends Emitter {
   }
 
   private createWs(_onOpen?: Function, _onClose?: Function, _onError?: Function) {
-    // console.log("call createWs:::");
+    console.log("call createWs:::");
 
     let onOpen: any = () => {
       const loginData = {
@@ -1263,6 +1245,7 @@ export default class OpenIMSDK extends Emitter {
   }
 
   private reconnect() {
+    if (!this.onceFlag) this.onceFlag = true;
     if (this.lock) return;
     this.lock = true;
     setTimeout(() => {
@@ -1270,14 +1253,4 @@ export default class OpenIMSDK extends Emitter {
       this.lock = false;
     }, 2000);
   }
-
-  // private resetHeart(){
-  //   clearTimeout(this.timer)
-  // }
-
-  // private startHeart() {
-  //   this.timer = setTimeout(()=>{
-  //     this.ws!.close;
-  //   },60000)
-  // }
 }
