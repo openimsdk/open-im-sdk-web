@@ -39,6 +39,17 @@ import {
   isRecvParams,
   SearchLocalParams,
   InsertGroupMsgParams,
+  FaceMessageParams,
+  RtcInvite,
+  RtcActionParams,
+  GroupMsgReadParams,
+  ChangeGroupMuteParams,
+  ChangeGroupMemberMuteParams,
+  setPrvParams,
+  MarkNotiParams,
+  FileMsgFullParams,
+  SouondMsgFullParams,
+  VideoMsgFullParams,
 } from "../types";
 
 export default class OpenIMSDK extends Emitter {
@@ -307,6 +318,58 @@ export default class OpenIMSDK extends Emitter {
     });
   };
 
+  createFileMessageFromFullPath = (data: FileMsgFullParams, operationID?: string) => {
+    return new Promise<WsResponse>((resolve, reject) => {
+      const _uuid = operationID || uuid(this.uid as string);
+      const args = {
+        reqFuncName: RequestFunc.CREATEFILEMESSAGEFROMFULLPATH,
+        operationID: _uuid,
+        userID: this.uid,
+        data,
+      };
+      this.wsSend(args, resolve, reject);
+    });
+  };
+
+  createImageMessageFromFullPath = (data: string, operationID?: string) => {
+    return new Promise<WsResponse>((resolve, reject) => {
+      const _uuid = operationID || uuid(this.uid as string);
+      const args = {
+        reqFuncName: RequestFunc.CREATEIMAGEMESSAGEFROMFULLPATH,
+        operationID: _uuid,
+        userID: this.uid,
+        data,
+      };
+      this.wsSend(args, resolve, reject);
+    });
+  };
+
+  createSoundMessageFromFullPath = (data: SouondMsgFullParams, operationID?: string) => {
+    return new Promise<WsResponse>((resolve, reject) => {
+      const _uuid = operationID || uuid(this.uid as string);
+      const args = {
+        reqFuncName: RequestFunc.CREATESOUNDMESSAGEFROMFULLPATH,
+        operationID: _uuid,
+        userID: this.uid,
+        data,
+      };
+      this.wsSend(args, resolve, reject);
+    });
+  };
+
+  createVideoMessageFromFullPath = (data: VideoMsgFullParams, operationID?: string) => {
+    return new Promise<WsResponse>((resolve, reject) => {
+      const _uuid = operationID || uuid(this.uid as string);
+      const args = {
+        reqFuncName: RequestFunc.CREATEVIDEOMESSAGEFROMFULLPATH,
+        operationID: _uuid,
+        userID: this.uid,
+        data,
+      };
+      this.wsSend(args, resolve, reject);
+    });
+  };
+
   createMergerMessage = (data: MergerMsgParams, operationID?: string) => {
     return new Promise<WsResponse>((resolve, reject) => {
       const _uuid = operationID || uuid(this.uid as string);
@@ -328,6 +391,19 @@ export default class OpenIMSDK extends Emitter {
       const _uuid = operationID || uuid(this.uid as string);
       const args = {
         reqFuncName: RequestFunc.CREATEFORWARDMESSAGE,
+        operationID: _uuid,
+        userID: this.uid,
+        data,
+      };
+      this.wsSend(args, resolve, reject);
+    });
+  };
+
+  createFaceMessage = (data: FaceMessageParams, operationID?: string) => {
+    return new Promise<WsResponse>((resolve, reject) => {
+      const _uuid = operationID || uuid(this.uid as string);
+      const args = {
+        reqFuncName: RequestFunc.CREATEFACEMESSAGE,
         operationID: _uuid,
         userID: this.uid,
         data,
@@ -445,6 +521,19 @@ export default class OpenIMSDK extends Emitter {
     });
   };
 
+  setOneConversationPrivateChat = (data: setPrvParams, operationID?: string) => {
+    return new Promise<WsResponse>((resolve, reject) => {
+      const _uuid = operationID || uuid(this.uid as string);
+      const args = {
+        reqFuncName: RequestFunc.SETONECONVERSATIONPRIVATECHAT,
+        operationID: _uuid,
+        userID: this.uid,
+        data,
+      };
+      this.wsSend(args, resolve, reject);
+    });
+  };
+
   deleteMessageFromLocalStorage = (data: string, operationID?: string) => {
     return new Promise<WsResponse>((resolve, reject) => {
       const _uuid = operationID || uuid(this.uid as string);
@@ -458,6 +547,58 @@ export default class OpenIMSDK extends Emitter {
     });
   };
 
+  deleteMessageFromLocalAndSvr = (data: string, operationID?: string) => {
+    return new Promise<WsResponse>((resolve, reject) => {
+      const _uuid = operationID || uuid(this.uid as string);
+      const args = {
+        reqFuncName: RequestFunc.DELETEMESSAGEFROMLOCALANDSVR,
+        operationID: _uuid,
+        userID: this.uid,
+        data,
+      };
+      this.wsSend(args, resolve, reject);
+    });
+  };
+
+  deleteConversationFromLocalAndSvr = (data: string, operationID?: string) => {
+    return new Promise<WsResponse>((resolve, reject) => {
+      const _uuid = operationID || uuid(this.uid as string);
+      const args = {
+        reqFuncName: RequestFunc.DELETECONVERSATIONFROMLOCALANDSVR,
+        operationID: _uuid,
+        userID: this.uid,
+        data,
+      };
+      this.wsSend(args, resolve, reject);
+    });
+  };
+
+  deleteAllMsgFromLocal = (operationID?: string) => {
+    return new Promise<WsResponse>((resolve, reject) => {
+      const _uuid = operationID || uuid(this.uid as string);
+      const args = {
+        reqFuncName: RequestFunc.DELETEALLMSGFROMLOCAL,
+        operationID: _uuid,
+        userID: this.uid,
+        data: "",
+      };
+      this.wsSend(args, resolve, reject);
+    });
+  };
+
+  deleteAllMsgFromLocalAndSvr = (operationID?: string) => {
+    return new Promise<WsResponse>((resolve, reject) => {
+      const _uuid = operationID || uuid(this.uid as string);
+      const args = {
+        reqFuncName: RequestFunc.DELETEALLMSGFROMLOCALANDSVR,
+        operationID: _uuid,
+        userID: this.uid,
+        data: "",
+      };
+      this.wsSend(args, resolve, reject);
+    });
+  };
+
   markGroupMessageHasRead = (data: string, operationID?: string) => {
     return new Promise<WsResponse>((resolve, reject) => {
       const _uuid = operationID || uuid(this.uid as string);
@@ -466,6 +607,21 @@ export default class OpenIMSDK extends Emitter {
         operationID: _uuid,
         userID: this.uid,
         data,
+      };
+      this.wsSend(args, resolve, reject);
+    });
+  };
+
+  markGroupMessageAsRead = (data: GroupMsgReadParams, operationID?: string) => {
+    return new Promise<WsResponse>((resolve, reject) => {
+      const _uuid = operationID || uuid(this.uid as string);
+      const tmp: any = data;
+      tmp.msgIDList = JSON.stringify(tmp.msgIDList);
+      const args = {
+        reqFuncName: RequestFunc.MARKGROUPMESSAGEASREAD,
+        operationID: _uuid,
+        userID: this.uid,
+        data: tmp,
       };
       this.wsSend(args, resolve, reject);
     });
@@ -517,6 +673,21 @@ export default class OpenIMSDK extends Emitter {
       const _uuid = operationID || uuid(this.uid as string);
       const args = {
         reqFuncName: RequestFunc.MARKC2CMESSAGEASREAD,
+        operationID: _uuid,
+        userID: this.uid,
+        data: tmp,
+      };
+      this.wsSend(args, resolve, reject);
+    });
+  };
+
+  markMessageAsReadByConID = (data: MarkNotiParams, operationID?: string) => {
+    return new Promise<WsResponse>((resolve, reject) => {
+      let tmp: any = data;
+      tmp.msgIDList = JSON.stringify(tmp.msgIDList);
+      const _uuid = operationID || uuid(this.uid as string);
+      const args = {
+        reqFuncName: RequestFunc.MARKMESSAGEASREADBYCONID,
         operationID: _uuid,
         userID: this.uid,
         data: tmp,
@@ -1021,6 +1192,45 @@ export default class OpenIMSDK extends Emitter {
     });
   };
 
+  dismissGroup = (data: string, operationID?: string) => {
+    return new Promise<WsResponse>((resolve, reject) => {
+      const _uuid = operationID || uuid(this.uid as string);
+      const args = {
+        reqFuncName: RequestFunc.DISMISSGROUP,
+        operationID: _uuid,
+        userID: this.uid,
+        data,
+      };
+      this.wsSend(args, resolve, reject);
+    });
+  };
+
+  changeGroupMute = (data: ChangeGroupMuteParams, operationID?: string) => {
+    return new Promise<WsResponse>((resolve, reject) => {
+      const _uuid = operationID || uuid(this.uid as string);
+      const args = {
+        reqFuncName: RequestFunc.CHANGEGROUPMUTE,
+        operationID: _uuid,
+        userID: this.uid,
+        data,
+      };
+      this.wsSend(args, resolve, reject);
+    });
+  };
+
+  changeGroupMemberMute = (data: ChangeGroupMemberMuteParams, operationID?: string) => {
+    return new Promise<WsResponse>((resolve, reject) => {
+      const _uuid = operationID || uuid(this.uid as string);
+      const args = {
+        reqFuncName: RequestFunc.CHANGEGROUPMEMBERMUTE,
+        operationID: _uuid,
+        userID: this.uid,
+        data,
+      };
+      this.wsSend(args, resolve, reject);
+    });
+  };
+
   transferGroupOwner = (data: TransferGroupParams, operationID?: string) => {
     return new Promise<WsResponse>((resolve, reject) => {
       const _uuid = operationID || uuid(this.uid as string);
@@ -1086,6 +1296,75 @@ export default class OpenIMSDK extends Emitter {
     });
   };
 
+  signalingInvite = (data: RtcInvite, operationID?: string) => {
+    return new Promise<WsResponse>((resolve, reject) => {
+      const _uuid = operationID || uuid(this.uid as string);
+      const tmp: any = {};
+      tmp.invitation = data;
+      const args = {
+        reqFuncName: RequestFunc.SIGNALINGINVITE,
+        operationID: _uuid,
+        userID: this.uid,
+        data: tmp,
+      };
+      this.wsSend(args, resolve, reject);
+    });
+  };
+
+  signalingInviteInGroup = (data: RtcInvite, operationID?: string) => {
+    return new Promise<WsResponse>((resolve, reject) => {
+      const _uuid = operationID || uuid(this.uid as string);
+      const tmp: any = {};
+      tmp.invitation = data;
+      const args = {
+        reqFuncName: RequestFunc.SIGNALINGINVITEINGROUP,
+        operationID: _uuid,
+        userID: this.uid,
+        data: tmp,
+      };
+      this.wsSend(args, resolve, reject);
+    });
+  };
+
+  signalingAccept = (data: RtcActionParams, operationID?: string) => {
+    return new Promise<WsResponse>((resolve, reject) => {
+      const _uuid = operationID || uuid(this.uid as string);
+      const args = {
+        reqFuncName: RequestFunc.SIGNALINGACCEPT,
+        operationID: _uuid,
+        userID: this.uid,
+        data,
+      };
+      this.wsSend(args, resolve, reject);
+    });
+  };
+
+  signalingReject = (data: RtcActionParams, operationID?: string) => {
+    return new Promise<WsResponse>((resolve, reject) => {
+      const _uuid = operationID || uuid(this.uid as string);
+      const args = {
+        reqFuncName: RequestFunc.SIGNALINGREJECT,
+        operationID: _uuid,
+        userID: this.uid,
+        data,
+      };
+      this.wsSend(args, resolve, reject);
+    });
+  };
+
+  signalingCancel = (data: RtcActionParams, operationID?: string) => {
+    return new Promise<WsResponse>((resolve, reject) => {
+      const _uuid = operationID || uuid(this.uid as string);
+      const args = {
+        reqFuncName: RequestFunc.SIGNALINGCANCEL,
+        operationID: _uuid,
+        userID: this.uid,
+        data,
+      };
+      this.wsSend(args, resolve, reject);
+    });
+  };
+
   //tool methods
 
   private wsSend = (params: WsParams, resolve: (value: WsResponse | PromiseLike<WsResponse>) => void, reject: (reason?: any) => void) => {
@@ -1115,9 +1394,9 @@ export default class OpenIMSDK extends Emitter {
 
     const handleMessage = (ev: MessageEvent<string>) => {
       const data = JSON.parse(ev.data);
-
       if ((CbEvents as Record<string, string>)[data.event.toUpperCase()]) {
         this.emit(data.event, data);
+        return;
       }
 
       if (params.reqFuncName === RequestFunc.LOGOUT) {

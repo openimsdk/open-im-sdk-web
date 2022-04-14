@@ -79,10 +79,33 @@ export type FileMsgParams = {
   fileSize: number;
 };
 
+
+export type FileMsgFullParams = {
+  fileFullPath: string;
+  fileName: string;
+};
+
+export type VideoMsgFullParams = {
+  videoFullPath: string;
+  videoType: string;
+  duration: number;
+  snapshotFullPath: string;
+};
+
+export type SouondMsgFullParams = {
+  soundPath: string;
+  duration: number;
+};
+
 export type MergerMsgParams = {
   messageList: MessageItem[];
   title: string;
   summaryList: string[];
+};
+
+export type FaceMessageParams = {
+  index: number;
+  data: string;
 };
 
 export type LocationMsgParams = {
@@ -114,7 +137,13 @@ export type GetHistoryMsgParams = {
   groupID: string;
   count: number;
   startClientMsgID: string;
+  conversationID?: string;
 };
+
+export type setPrvParams = {
+  conversationID: string;
+  isPrivate: boolean;
+}
 
 export type InsertSingleMsgParams = {
   message: string;
@@ -135,6 +164,11 @@ export type TypingUpdateParams = {
 
 export type MarkC2CParams = {
   userID: string;
+  msgIDList: string[];
+};
+
+export type MarkNotiParams = {
+  conversationID: string;
   msgIDList: string[];
 };
 
@@ -170,9 +204,9 @@ export enum OptType {
 }
 
 export type SearchLocalParams = {
-  sourceID?: string;
-  sessionType?: number;
-  keywordList?: string[];
+  sourceID: string;
+  sessionType: number;
+  keywordList: string[];
   keywordListMatchType?: number;
   senderUserIDList?: string[];
   messageTypeList?: number[];
@@ -201,6 +235,11 @@ export type InviteGroupParams = {
   groupID: string;
   reason: string;
   userIDList: string[];
+};
+
+export type GroupMsgReadParams = {
+  groupID: string;
+  msgIDList: string[];
 };
 
 export type GetGroupMemberParams = {
@@ -241,6 +280,17 @@ export type JoinGroupParams = {
   reqMsg: string;
 };
 
+export type ChangeGroupMuteParams = {
+  groupID: string;
+  isMute: boolean;
+};
+
+export type ChangeGroupMemberMuteParams = {
+  groupID: string;
+  userID: string;
+  mutedSeconds: number;
+};
+
 export type TransferGroupParams = {
   groupID: string;
   newOwnerUserID: string;
@@ -250,6 +300,22 @@ export type AccessGroupParams = {
   groupID: string;
   fromUserID: string;
   handleMsg: string;
+};
+
+export type RtcInvite = {
+  inviterUserID: string;
+  inviteeUserIDList: string[];
+  groupID: string;
+  roomID: string;
+  timeout: number;
+  mediaType: string;
+  sessionType: number;
+  platformID: number;
+};
+
+export type RtcActionParams = {
+  opUserID: string;
+  invitation: RtcInvite;
 };
 
 export type Ws2Promise = {
@@ -372,27 +438,41 @@ export type GroupItem = {
   ownerUserID: string;
   createTime: number;
   memberCount: number;
-  status: number;
+  status: GroupStatus;
   creatorUserID: string;
   groupType: number;
   ex: string;
 };
+
+export enum GroupStatus {
+  Nomal=0,
+  Baned = 1,
+  Dismissed = 2,
+  Muted = 3,
+}
 
 export type GroupMemberItem = {
   groupID: string;
   userID: string;
   nickname: string;
   faceURL: string;
-  roleLevel: number;
+  roleLevel: GroupRole;
+  muteEndTime: number;
   joinTime: number;
   joinSource: number;
   operatorUserID: string;
   ex: string;
 };
 
+export enum GroupRole {
+  Nomal = 1,
+  Owner = 2,
+  Admin = 3,
+}
+
 export type ConversationItem = {
   conversationID: string;
-  conversationType: number;
+  conversationType: SessionType;
   userID: string;
   groupID: string;
   showName: string;
@@ -405,6 +485,7 @@ export type ConversationItem = {
   draftText: string;
   draftTextTime: number;
   isPinned: boolean;
+  isPrivateChat: boolean;
   attachedInfo: string;
   ex: string;
 };
@@ -414,33 +495,104 @@ export type MessageItem = {
   serverMsgID: string;
   createTime: number;
   sendTime: number;
-  sessionType: number;
+  sessionType: SessionType;
   sendID: string;
   recvID: string;
   msgFrom: number;
-  contentType: number;
-  platformID: number;
+  contentType: MessageType;
+  platformID: Platform;
   senderNickname: string;
   senderFaceUrl: string;
   groupID: string;
   content: string;
   seq: number;
   isRead: boolean;
-  status: number;
+  status: MessageStatus;
   offlinePush: OfflinePush;
   attachedInfo: string;
+  attachedInfoElem: AttachedInfoElem;
   ex: string;
   pictureElem: PictureElem;
   soundElem: SoundElem;
   videoElem: VideoElem;
   fileElem: FileElem;
+  faceElem: FaceElem;
   mergeElem: MergeElem;
   atElem: AtElem;
   locationElem: LocationElem;
   customElem: CustomElem;
   quoteElem: QuoteElem;
   notificationElem: NotificationElem;
+  progress?: number;
+  downloadProgress?: number;
+  downloaded?: boolean;
 };
+
+export enum MessageStatus {
+  Sending = 1,
+  Succeed = 2,
+  Failed = 3,
+}
+
+export enum Platform {
+  iOS = 1,
+  Android = 2,
+  Windows = 3,
+  MacOSX = 4,
+  Web = 5,
+  Linux = 7,
+  Admin = 8,
+}
+
+export enum MessageType {
+  TEXTMESSAGE = 101,
+  PICTUREMESSAGE = 102,
+  VOICEMESSAGE = 103,
+  VIDEOMESSAGE = 104,
+  FILEMESSAGE = 105,
+  ATTEXTMESSAGE = 106,
+  MERGERMESSAGE = 107,
+  CARDMESSAGE = 108,
+  LOCATIONMESSAGE = 109,
+  CUSTOMMESSAGE = 110,
+  REVOKEMESSAGE = 111,
+  HASREADRECEIPTMESSAGE = 112,
+  TYPINGMESSAGE = 113,
+  QUOTEMESSAGE = 114,
+  FACEMESSAGE = 115,
+  FRIENDAPPLICATIONAPPROVED = 1201,
+  FRIENDAPPLICATIONREJECTED = 1202,
+  FRIENDAPPLICATIONADDED = 1203,
+  FRIENDADDED = 1204,
+  FRIENDDELETED = 1205,
+  FRIENDREMARKSET = 1206,
+  BLACKADDED = 1207,
+  BLACKDELETED = 1208,
+  SELFINFOUPDATED = 1303,
+  NOTIFICATION = 1400,
+  GROUPCREATED = 1501,
+  GROUPINFOUPDATED = 1502,
+  JOINGROUPAPPLICATIONADDED = 1503,
+  MEMBERQUIT = 1504,
+  GROUPAPPLICATIONACCEPTED = 1505,
+  GROUPAPPLICATIONREJECTED = 1506,
+  GROUPOWNERTRANSFERRED = 1507,
+  MEMBERKICKED = 1508,
+  MEMBERINVITED = 1509,
+  MEMBERENTER = 1510,
+  GROUPDISMISSED = 1511,
+  GROUPMEMBERMUTED = 1512,
+  GROUPMEMBERCANCELMUTED = 1513,
+  GROUPMUTED = 1514,
+  GROUPCANCELMUTED = 1515,
+  BURNMESSAGECHANGE = 1701
+}
+
+export enum SessionType {
+  Single = 1,
+  Group = 2,
+  Notification = 4,
+}
 
 export type NotificationElem = {
   detail: string;
@@ -465,6 +617,11 @@ export type FileElem = {
   sourceUrl: string;
   fileName: string;
   fileSize: number;
+};
+
+export type FaceElem = {
+  index: number;
+  data: string;
 };
 
 export type LocationElem = {
@@ -492,6 +649,16 @@ export type PictureElem = {
   sourcePicture: Picture;
   bigPicture: Picture;
   snapshotPicture: Picture;
+};
+
+export type AttachedInfoElem = {
+  groupHasReadInfo: GroupHasReadInfo;
+  isPrivateChat: boolean;
+};
+
+export type GroupHasReadInfo = {
+  hasReadCount: number;
+  hasReadUserIDList: string[];
 };
 
 export type Picture = {

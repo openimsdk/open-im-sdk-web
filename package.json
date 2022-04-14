@@ -1,6 +1,6 @@
 {
   "name": "open-im-sdk",
-  "version": "2.0.1",
+  "version": "2.0.3",
   "description": "OpenIM SDK",
   "main": "dist/index.js",
   "source":"src/index.ts",
