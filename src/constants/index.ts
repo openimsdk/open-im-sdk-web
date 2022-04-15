@@ -57,6 +57,7 @@ enum RequestFunc {
     SETSELFINFO="SetSelfInfo",
     GETALLCONVERSATIONLIST="GetAllConversationList",
     GETCONVERSATIONLISTSPLIT="GetConversationListSplit",
+	GETCONVERSATIONLISTBYUSER = "GetConversationListByUser",
     GETONECONVERSATION="GetOneConversation",
     GETCONVERSATIONIDBYSESSIONTYPE="GetConversationIDBySessionType",
     GETMULTIPLECONVERSATION="GetMultipleConversation",

@@ -177,6 +177,20 @@ export type SplitParams = {
   count: number;
 };
 
+/**
+ * 通过用户id批量获取指定会好列表
+ */
+export type GetConversationByUserParams = {
+  /**
+   * pined的会话是否参与排序，查询全部会话时，是参与排序的
+   */
+  isPinedOrder: bool;
+  /**
+   * 待查询的用户id列表
+   */
+  userIds: Array<string>;
+};
+
 export type GetOneCveParams = {
   sourceID: string;
   sessionType: number;

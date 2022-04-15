@@ -32,6 +32,7 @@ import {
   AccessGroupParams,
   WsParams,
   SplitParams,
+  GetConversationByUserParams,
   AccessFriendParams,
   GroupInfoParams,
   RemarkFriendParams,
@@ -740,6 +741,25 @@ export default class OpenIMSDK extends Emitter {
       const _uuid = operationID || uuid(this.uid as string);
       const args = {
         reqFuncName: RequestFunc.GETCONVERSATIONLISTSPLIT,
+        operationID: _uuid,
+        userID: this.uid,
+        data,
+      };
+      this.wsSend(args, resolve, reject);
+    });
+  };
+
+  /**
+   * 获取指定用户列表的会话信息
+   * @param data 
+   * @param operationID 
+   * @returns 
+   */
+  getConversationListByUser = (data: GetConversationByUserParams, operationID?: string) => {
+    return new Promise<WsResponse>((resolve, reject) => {
+      const _uuid = operationID || uuid(this.uid as string);
+      const args = {
+        reqFuncName: RequestFunc.GETCONVERSATIONLISTBYUSER,
         operationID: _uuid,
         userID: this.uid,
         data,
