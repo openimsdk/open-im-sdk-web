@@ -28,9 +28,29 @@ export type LoginParams = {
   token: string;
 };
 
+export type AdvancedMsgParams = {
+  text: string;
+  messageEntityList?: MessageEntity[];
+}
+
+export type MessageEntity = {
+  type:string;
+  offset: number;
+  length:number;
+  url?: string;
+  userInfo?: PublicUserItem;
+}
+
 export type AtMsgParams = {
   text: string;
   atUserIDList: string[];
+  atUsersInfo?: AtUsersInfoItem[];
+  message?: string;
+};
+
+export type AtUsersInfoItem = {
+  atUserID: string;
+  groupNickname: string;
 };
 
 export type ImageMsgParams = {
@@ -78,7 +98,6 @@ export type FileMsgParams = {
   sourceUrl: string;
   fileSize: number;
 };
-
 
 export type FileMsgFullParams = {
   fileFullPath: string;
@@ -143,7 +162,7 @@ export type GetHistoryMsgParams = {
 export type setPrvParams = {
   conversationID: string;
   isPrivate: boolean;
-}
+};
 
 export type InsertSingleMsgParams = {
   message: string;
@@ -204,8 +223,7 @@ export enum OptType {
 }
 
 export type SearchLocalParams = {
-  sourceID: string;
-  sessionType: number;
+  conversationID: string;
   keywordList: string[];
   keywordListMatchType?: number;
   senderUserIDList?: string[];
@@ -271,6 +289,12 @@ export type Member = {
 export type GroupInfoParams = {
   groupID: string;
   groupInfo: GroupBaseInfo;
+};
+
+export type MemberNameParams = {
+  groupID: string;
+  userID: string;
+  GroupMemberNickname: string;
 };
 
 export type GroupBaseInfo = Partial<Omit<GroupInitInfo, "groupType">>;
@@ -445,7 +469,7 @@ export type GroupItem = {
 };
 
 export enum GroupStatus {
-  Nomal=0,
+  Nomal = 0,
   Baned = 1,
   Dismissed = 2,
   Muted = 3,
@@ -485,6 +509,7 @@ export type ConversationItem = {
   draftText: string;
   draftTextTime: number;
   isPinned: boolean;
+  isNotInGroup: boolean;
   isPrivateChat: boolean;
   attachedInfo: string;
   ex: string;
@@ -585,7 +610,8 @@ export enum MessageType {
   GROUPMEMBERCANCELMUTED = 1513,
   GROUPMUTED = 1514,
   GROUPCANCELMUTED = 1515,
-  BURNMESSAGECHANGE = 1701
+  GROUPMEMBERINFOUPDATED = 1516,
+  BURNMESSAGECHANGE = 1701,
 }
 
 export enum SessionType {
@@ -602,7 +628,9 @@ export type NotificationElem = {
 export type AtElem = {
   text: string;
   atUserList: string[];
-  isAtSelf: boolean;
+  atUsersInfo?: AtUsersInfoItem[];
+  quoteMessage?: string;
+  isAtSelf?: boolean;
 };
 
 export type CustomElem = {
@@ -654,6 +682,8 @@ export type PictureElem = {
 export type AttachedInfoElem = {
   groupHasReadInfo: GroupHasReadInfo;
   isPrivateChat: boolean;
+  hasReadTime: number;
+  notSenderNotificationPush: boolean;
 };
 
 export type GroupHasReadInfo = {
@@ -697,3 +727,14 @@ export type VideoElem = {
   snapshotWidth: number;
   snapshotHeight: number;
 };
+
+export type SearchLocalLogData = {
+  conversationID: string;
+  conversationType: number;
+  faceURL: string;
+  messageCount: number;
+  messageList: MessageItem[];
+  showName: string;
+  sendTime?: string;
+  latestMsg?: string;
+}

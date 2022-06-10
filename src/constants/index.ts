@@ -7,6 +7,7 @@ enum RequestFunc {
     GETSELFUSERINFO="GetSelfUserInfo",
     CREATETEXTMESSAGE="CreateTextMessage",
     CREATETEXTATMESSAGE="CreateTextAtMessage",
+    CREATEADVANCEDTEXTMESSAGE="CreateAdvancedTextMessage",
     CREATEIMAGEMESSAGEFROMBYURL="CreateImageMessageByURL",
     CREATESOUNDMESSAGEBYURL="CreateSoundMessageByURL",
     CREATEVIDEOMESSAGEBYURL="CreateVideoMessageByURL",
@@ -25,6 +26,7 @@ enum RequestFunc {
     SENDMESSAGE="SendMessage",
     SENDMESSAGENOTOSS="SendMessageNotOss",
     GETHISTORYMESSAGELIST="GetHistoryMessageList",
+    GETHISTORYMESSAGELISTREVERSE="GetHistoryMessageListReverse",
     REVOKEMESSAGE="RevokeMessage",
     SETONECONVERSATIONPRIVATECHAT="SetOneConversationPrivateChat",
     DELETEMESSAGEFROMLOCALSTORAGE="DeleteMessageFromLocalStorage",
@@ -39,7 +41,9 @@ enum RequestFunc {
     MARKC2CMESSAGEASREAD="MarkC2CMessageAsRead",
     MARKMESSAGEASREADBYCONID="MarkMessageAsReadByConID",
     CLEARC2CHISTORYMESSAGE="ClearC2CHistoryMessage",
+    CLEARC2CHISTORYMESSAGEFROMLOCALANDSVR="ClearC2CHistoryMessageFromLocalAndSvr",
     CLEARGROUPHISTORYMESSAGE="ClearGroupHistoryMessage",
+    CLEARGROUPHISTORYMESSAGEFROMLOCALANDSVR="ClearGroupHistoryMessageFromLocalAndSvr",
     ADDFRIEND="AddFriend",
     GETDESIGNATEDFRIENDSINFO="GetDesignatedFriendsInfo",
     GETRECVFRIENDAPPLICATIONLIST="GetRecvFriendApplicationList",
@@ -76,6 +80,7 @@ enum RequestFunc {
     GETJOINEDGROUPLIST="GetJoinedGroupList",
     CREATEGROUP="CreateGroup",
     SETGROUPINFO="SetGroupInfo",
+    SETGROUPMEMBERNICKNAME="SetGroupMemberNickname",
     GETGROUPSINFO="GetGroupsInfo",
     JOINGROUP="JoinGroup",
     QUITGROUP="QuitGroup",
@@ -91,7 +96,8 @@ enum RequestFunc {
     SIGNALINGINVITEINGROUP = "SignalingInviteInGroup",
     SIGNALINGACCEPT = "SignalingAccept",
     SIGNALINGREJECT = "SignalingReject",
-    SIGNALINGCANCEL = "SignalingCancel"
+    SIGNALINGCANCEL = "SignalingCancel",
+    SIGNALINGHUNGUP = "SignalingHungUp"
 }
 
 enum CbEvents {
@@ -103,6 +109,7 @@ enum CbEvents {
     ONUSERTOKENEXPIRED = "OnUserTokenExpired",
     ONPROGRESS = "OnProgress",
     ONRECVNEWMESSAGE = "OnRecvNewMessage",
+    ONRECVNEWMESSAGES = "OnRecvNewMessages",
     ONRECVMESSAGEREVOKED = "OnRecvMessageRevoked",
     ONRECVC2CREADRECEIPT = "OnRecvC2CReadReceipt",
     ONRECVGROUPREADRECEIPT = "OnRecvGroupReadReceipt",
