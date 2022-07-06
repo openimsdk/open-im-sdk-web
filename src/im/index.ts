@@ -52,6 +52,14 @@ import {
   VideoMsgFullParams,
   MemberNameParams,
   AdvancedMsgParams,
+  GetSubDepParams,
+  SearchInOrzParams,
+  SetGroupRoleParams,
+  SetGroupVerificationParams,
+  SearchFriendParams,
+  OptType,
+  SearchGroupParams,
+  GetGroupMemberByTimeParams,
 } from "../types";
 
 export default class OpenIMSDK extends Emitter {
@@ -65,8 +73,10 @@ export default class OpenIMSDK extends Emitter {
   private ws2promise: Record<string, Ws2Promise> = {};
   private onceFlag: boolean = true;
   private timer: NodeJS.Timer | undefined = undefined;
-  private lartestOpTime: number = 0;
+  private heartbeatCount: number = 0;
+  private heartbeatStartTime: number = 0;
   private platformID: number = 0;
+  private isBatch: boolean = false;
 
   constructor() {
     super();
@@ -85,7 +95,7 @@ export default class OpenIMSDK extends Emitter {
    */
   login(config: InitConfig) {
     return new Promise<WsResponse>((resolve, reject) => {
-      const { userID, token, url, platformID, operationID } = config;
+      const { userID, token, url, platformID, isBatch = false, operationID } = config;
       this.wsUrl = `${url}?sendID=${userID}&token=${token}&platformID=${platformID}`;
       this.platformID = platformID;
       const loginData = {
@@ -103,6 +113,7 @@ export default class OpenIMSDK extends Emitter {
       const onOpen = () => {
         this.uid = userID;
         this.token = token;
+        this.isBatch = isBatch;
         this.iLogin(loginData, operationID)
           .then((res) => {
             this.logoutFlag = false;
@@ -129,7 +140,7 @@ export default class OpenIMSDK extends Emitter {
               operationID: promise.oid,
             })
           );
-          // this.reconnect();
+          this.reconnect();
         }
         reject(errData);
       };
@@ -138,7 +149,7 @@ export default class OpenIMSDK extends Emitter {
         console.log(err);
         errData.errCode = 112;
         errData.errMsg = "ws connect error...";
-        // if (!this.logoutFlag) this.reconnect();
+        if (!this.logoutFlag) this.reconnect();
         reject(errData);
       };
 
@@ -160,7 +171,7 @@ export default class OpenIMSDK extends Emitter {
         operationID: _uuid,
         userID: this.uid,
         data,
-        batchMsg: 1,
+        batchMsg: this.isBatch ? 1 : 0,
       };
       this.wsSend(args, resolve, reject);
     });
@@ -622,6 +633,19 @@ export default class OpenIMSDK extends Emitter {
     });
   };
 
+  deleteAllConversationFromLocal = (operationID?: string) => {
+    return new Promise<WsResponse>((resolve, reject) => {
+      const _uuid = operationID || uuid(this.uid as string);
+      const args = {
+        reqFuncName: RequestFunc.DELETEALLCONVERSATIONFROMLOCAL,
+        operationID: _uuid,
+        userID: this.uid,
+        data: "",
+      };
+      this.wsSend(args, resolve, reject);
+    });
+  };
+
   deleteAllMsgFromLocal = (operationID?: string) => {
     return new Promise<WsResponse>((resolve, reject) => {
       const _uuid = operationID || uuid(this.uid as string);
@@ -728,6 +752,10 @@ export default class OpenIMSDK extends Emitter {
       };
       this.wsSend(args, resolve, reject);
     });
+  };
+
+  markNotifyMessageHasRead = (conversationID: string, operationID?: string) => {
+    this.markMessageAsReadByConID({ conversationID, msgIDList: [] });
   };
 
   markMessageAsReadByConID = (data: MarkNotiParams, operationID?: string) => {
@@ -970,6 +998,19 @@ export default class OpenIMSDK extends Emitter {
     });
   };
 
+  searchFriends = (data: SearchFriendParams, operationID?: string) => {
+    return new Promise<WsResponse>((resolve, reject) => {
+      const _uuid = operationID || uuid(this.uid as string);
+      const args = {
+        reqFuncName: RequestFunc.SEARCHFRIENDS,
+        operationID: _uuid,
+        userID: this.uid,
+        data,
+      };
+      this.wsSend(args, resolve, reject);
+    });
+  };
+
   getDesignatedFriendsInfo = (data: string[], operationID?: string) => {
     return new Promise<WsResponse>((resolve, reject) => {
       const _uuid = operationID || uuid(this.uid as string);
@@ -1184,6 +1225,19 @@ export default class OpenIMSDK extends Emitter {
     });
   };
 
+  getGroupMemberListByJoinTime = (data: GetGroupMemberByTimeParams, operationID?: string) => {
+    return new Promise<WsResponse>((resolve, reject) => {
+      const _uuid = operationID || uuid(this.uid as string);
+      const args = {
+        reqFuncName: RequestFunc.GETGROUPMEMBERLISTBYJOINTIME,
+        operationID: _uuid,
+        userID: this.uid,
+        data,
+      };
+      this.wsSend(args, resolve, reject);
+    });
+  };
+
   getJoinedGroupList = (operationID?: string) => {
     return new Promise<WsResponse>((resolve, reject) => {
       const _uuid = operationID || uuid(this.uid as string);
@@ -1259,6 +1313,19 @@ export default class OpenIMSDK extends Emitter {
       const _uuid = operationID || uuid(this.uid as string);
       const args = {
         reqFuncName: RequestFunc.JOINGROUP,
+        operationID: _uuid,
+        userID: this.uid,
+        data,
+      };
+      this.wsSend(args, resolve, reject);
+    });
+  };
+
+  searchGroups = (data: SearchGroupParams, operationID?: string) => {
+    return new Promise<WsResponse>((resolve, reject) => {
+      const _uuid = operationID || uuid(this.uid as string);
+      const args = {
+        reqFuncName: RequestFunc.SEARCHGROUPS,
         operationID: _uuid,
         userID: this.uid,
         data,
@@ -1390,7 +1457,7 @@ export default class OpenIMSDK extends Emitter {
       const tmp: any = {};
       tmp.invitation = data;
       const args = {
-        reqFuncName: RequestFunc.SIGNALINGINVITE,
+        reqFuncName: RequestFunc.SIGNAL_INGINVITE,
         operationID: _uuid,
         userID: this.uid,
         data: tmp,
@@ -1466,11 +1533,143 @@ export default class OpenIMSDK extends Emitter {
     });
   };
 
+  // organization
+  getSubDepartment = (data: GetSubDepParams, operationID?: string) => {
+    return new Promise<WsResponse>((resolve, reject) => {
+      const _uuid = operationID || uuid(this.uid as string);
+      const args = {
+        reqFuncName: RequestFunc.GETSUBDEPARTMENT,
+        operationID: _uuid,
+        userID: this.uid,
+        data,
+      };
+      this.wsSend(args, resolve, reject);
+    });
+  };
+
+  getDepartmentMember = (data: GetSubDepParams, operationID?: string) => {
+    return new Promise<WsResponse>((resolve, reject) => {
+      const _uuid = operationID || uuid(this.uid as string);
+      const args = {
+        reqFuncName: RequestFunc.GETDEPARTMENTMEMBER,
+        operationID: _uuid,
+        userID: this.uid,
+        data,
+      };
+      this.wsSend(args, resolve, reject);
+    });
+  };
+
+  getUserInDepartment = (userID: string, operationID?: string) => {
+    return new Promise<WsResponse>((resolve, reject) => {
+      const _uuid = operationID || uuid(this.uid as string);
+      const args = {
+        reqFuncName: RequestFunc.GETUSERINDEPARTMENT,
+        operationID: _uuid,
+        userID: this.uid,
+        data: userID,
+      };
+      this.wsSend(args, resolve, reject);
+    });
+  };
+
+  getDepartmentMemberAndSubDepartment = (departmentID: string, operationID?: string) => {
+    return new Promise<WsResponse>((resolve, reject) => {
+      const _uuid = operationID || uuid(this.uid as string);
+      const args = {
+        reqFuncName: RequestFunc.GETDEPARTMENTMEMBERANDSUBDEPARTMENT,
+        operationID: _uuid,
+        userID: this.uid,
+        data: departmentID,
+      };
+      this.wsSend(args, resolve, reject);
+    });
+  };
+
+  getDepartmentInfo = (departmentID: string, operationID?: string) => {
+    return new Promise<WsResponse>((resolve, reject) => {
+      const _uuid = operationID || uuid(this.uid as string);
+      const args = {
+        reqFuncName: RequestFunc.GETDEPARTMENTINFO,
+        operationID: _uuid,
+        userID: this.uid,
+        data: departmentID,
+      };
+      this.wsSend(args, resolve, reject);
+    });
+  };
+
+  searchOrganization = (data: SearchInOrzParams, operationID?: string) => {
+    return new Promise<WsResponse>((resolve, reject) => {
+      const _uuid = operationID || uuid(this.uid as string);
+      const tmp: any = data;
+      tmp.input = JSON.stringify(tmp.input);
+      const args = {
+        reqFuncName: RequestFunc.SEARCHORGANIZATION,
+        operationID: _uuid,
+        userID: this.uid,
+        data: tmp,
+      };
+      this.wsSend(args, resolve, reject);
+    });
+  };
+
+  resetConversationGroupAtType = (data: string, operationID?: string) => {
+    return new Promise<WsResponse>((resolve, reject) => {
+      const _uuid = operationID || uuid(this.uid as string);
+      const args = {
+        reqFuncName: RequestFunc.RESETCONVERSATIONGROUPATTYPE,
+        operationID: _uuid,
+        userID: this.uid,
+        data,
+      };
+      this.wsSend(args, resolve, reject);
+    });
+  };
+
+  setGroupMemberRoleLevel = (data: SetGroupRoleParams, operationID?: string) => {
+    return new Promise<WsResponse>((resolve, reject) => {
+      const _uuid = operationID || uuid(this.uid as string);
+      const args = {
+        reqFuncName: RequestFunc.SETGROUPMEMBERROLELEVEL,
+        operationID: _uuid,
+        userID: this.uid,
+        data,
+      };
+      this.wsSend(args, resolve, reject);
+    });
+  };
+
+  setGroupVerification = (data: SetGroupVerificationParams, operationID?: string) => {
+    return new Promise<WsResponse>((resolve, reject) => {
+      const _uuid = operationID || uuid(this.uid as string);
+      const args = {
+        reqFuncName: RequestFunc.SETGROUPVERIFICATION,
+        operationID: _uuid,
+        userID: this.uid,
+        data,
+      };
+      this.wsSend(args, resolve, reject);
+    });
+  };
+
+  setGlobalRecvMessageOpt = (data: { opt: OptType }, operationID?: string) => {
+    return new Promise<WsResponse>((resolve, reject) => {
+      const _uuid = operationID || uuid(this.uid as string);
+      const args = {
+        reqFuncName: RequestFunc.SETGLOBALRECVMESSAGEOPT,
+        operationID: _uuid,
+        userID: this.uid,
+        data,
+      };
+      this.wsSend(args, resolve, reject);
+    });
+  };
+
   //tool methods
 
   private wsSend = (params: WsParams, resolve: (value: WsResponse | PromiseLike<WsResponse>) => void, reject: (reason?: any) => void) => {
-    this.lartestOpTime = new Date().getTime();
-    if (!window.navigator.onLine) {
+    if (window?.navigator && !window.navigator.onLine) {
       let errData: WsResponse = {
         event: params.reqFuncName,
         errCode: 113,
@@ -1481,17 +1680,17 @@ export default class OpenIMSDK extends Emitter {
       reject(errData);
       return;
     }
-    if (this.ws === undefined) {
-      let errData: WsResponse = {
-        event: params.reqFuncName,
-        errCode: 112,
-        errMsg: "ws conect failed...",
-        data: "",
-        operationID: params.operationID || "",
-      };
-      reject(errData);
-      return;
-    }
+    // if (this.ws === undefined) {
+    //   let errData: WsResponse = {
+    //     event: params.reqFuncName,
+    //     errCode: 112,
+    //     errMsg: "ws conect failed...",
+    //     data: "",
+    //     operationID: params.operationID || "",
+    //   };
+    //   reject(errData);
+    //   return;
+    // }
     if (typeof params.data === "object") {
       params.data = JSON.stringify(params.data);
     }
@@ -1531,31 +1730,49 @@ export default class OpenIMSDK extends Emitter {
       delete this.ws2promise[data.operationID];
     };
 
-    if (this.platform == "web") {
-      this.ws!.send(JSON.stringify(params));
-      this.ws!.onmessage = handleMessage;
-    } else {
-      this.ws!.send({
-        //@ts-ignore
-        data: JSON.stringify(params),
-        success: (res: any) => {
+    try {
+      if (this.platform == "web") {
+        this.ws!.send(JSON.stringify(params));
+        this.ws!.onmessage = handleMessage;
+      } else {
+        this.ws!.send({
           //@ts-ignore
-          if (
-            this.platform === "uni" &&
+          data: JSON.stringify(params),
+          success: (res: any) => {
             //@ts-ignore
-            this.ws!._callbacks !== undefined &&
-            //@ts-ignore
-            this.ws!._callbacks.message !== undefined
-          ) {
-            //@ts-ignore
-            this.ws!._callbacks.message = [];
-          }
-        },
-      });
-      if (this.onceFlag) {
-        //@ts-ignore
-        this.ws!.onMessage(handleMessage);
-        this.onceFlag = false;
+            if (
+              this.platform === "uni" &&
+              //@ts-ignore
+              this.ws!._callbacks !== undefined &&
+              //@ts-ignore
+              this.ws!._callbacks.message !== undefined
+            ) {
+              //@ts-ignore
+              this.ws!._callbacks.message = [];
+            }
+          },
+        });
+        if (this.onceFlag) {
+          //@ts-ignore
+          this.ws!.onMessage(handleMessage);
+          this.onceFlag = false;
+        }
+      }
+    } catch (error) {
+      if (this.wsUrl && this.token && this.token) {
+        this.createWs().then(() => {
+          this.wsSend(params, resolve, reject);
+        });
+      } else {
+        let errData: WsResponse = {
+          event: params.reqFuncName,
+          errCode: 112,
+          errMsg: "no ws conect...",
+          data: "",
+          operationID: params.operationID || "",
+        };
+        reject(errData);
+        return;
       }
     }
     if (params.reqFuncName === RequestFunc.LOGOUT) {
@@ -1585,71 +1802,72 @@ export default class OpenIMSDK extends Emitter {
   }
 
   private createWs(_onOpen?: Function, _onClose?: Function, _onError?: Function) {
-    console.log("call createWs:::");
-    if (this.ws) {
-      this.ws.readyState !== WebSocket.CLOSED ? this.ws.close() : (this.ws = undefined);
-    }
+    return new Promise<void>((resolve, reject) => {
+      this.ws?.close();
+      this.ws = undefined;
 
-    let onOpen: any = () => {
-      const loginData = {
-        userID: this.uid!,
-        token: this.token!,
+      let onOpen: any = () => {
+        const loginData = {
+          userID: this.uid!,
+          token: this.token!,
+        };
+        this.iLogin(loginData).then((res) => {
+          this.logoutFlag = false;
+          this.heartbeat();
+          resolve();
+        });
       };
-      this.iLogin(loginData).then((res) => {
-        this.logoutFlag = false;
-        this.heartbeat();
-      });
-    };
 
-    if (_onOpen) {
-      onOpen = _onOpen;
-    }
-
-    let onClose: any = () => {
-      console.log("ws close agin:::");
-      if (!this.logoutFlag) {
-        Object.values(this.ws2promise).forEach((promise) =>
-          promise.mrjet({
-            event: promise.mname,
-            errCode: 111,
-            errMsg: "ws connect close...",
-            data: "",
-            operationID: promise.oid,
-          })
-        );
-        // this.reconnect();
+      if (_onOpen) {
+        onOpen = _onOpen;
       }
-    };
 
-    if (_onClose) {
-      onClose = _onClose;
-    }
+      let onClose: any = () => {
+        console.log("ws close agin:::");
+        if (!this.logoutFlag) {
+          Object.values(this.ws2promise).forEach((promise) =>
+            promise.mrjet({
+              event: promise.mname,
+              errCode: 111,
+              errMsg: "ws connect close...",
+              data: "",
+              operationID: promise.oid,
+            })
+          );
+          this.reconnect();
+        }
+      };
 
-    let onError: any = () => {};
-    if (_onError) {
-      onError = _onError;
-    }
+      if (_onClose) {
+        onClose = _onClose;
+      }
 
-    if (this.platform === "web") {
-      this.ws = new WebSocket(this.wsUrl);
-      this.ws.onclose = onClose;
-      this.ws.onopen = onOpen;
-      this.ws.onerror = onError;
-      return;
-    }
+      let onError: any = () => {};
+      if (_onError) {
+        onError = _onError;
+      }
 
-    // @ts-ignore
-    const platformNamespace = this.platform === "uni" ? uni : wx;
-    this.ws = platformNamespace.connectSocket({
-      url: this.wsUrl,
-      complete: () => {},
+      if (this.platform === "web") {
+        this.ws = new WebSocket(this.wsUrl);
+        this.ws.onclose = onClose;
+        this.ws.onopen = onOpen;
+        this.ws.onerror = onError;
+        return;
+      }
+
+      // @ts-ignore
+      const platformNamespace = this.platform === "uni" ? uni : wx;
+      this.ws = platformNamespace.connectSocket({
+        url: this.wsUrl,
+        complete: () => {},
+      });
+      //@ts-ignore
+      this.ws.onClose(onClose);
+      //@ts-ignore
+      this.ws.onOpen(onOpen);
+      //@ts-ignore
+      this.ws.onError(onError);
     });
-    //@ts-ignore
-    this.ws.onClose(onClose);
-    //@ts-ignore
-    this.ws.onOpen(onOpen);
-    //@ts-ignore
-    this.ws.onError(onError);
   }
 
   private reconnect() {
@@ -1659,29 +1877,30 @@ export default class OpenIMSDK extends Emitter {
     setTimeout(() => {
       this.createWs();
       this.lock = false;
-    }, 2000);
+    }, 5000);
   }
 
   private heartbeat() {
     if (this.platformID !== 5) return;
-    if (this.timer) clearInterval(this.timer);
+    if (this.timer) clearTimeout(this.timer);
 
-    this.timer = setInterval(() => {
-      
+    this.heartbeatStartTime = new Date().getTime();
+    
+    const heartbeatCallback = () => {
+      this.heartbeatCount++;
+      const offset = new Date().getTime() - (this.heartbeatStartTime + this.heartbeatCount * 30000);
+      let nextTime = 30000 - offset;
+      if (nextTime < 0) {
+        nextTime = 0;
+      }
       if (this.logoutFlag) {
         this.timer && clearInterval(this.timer);
         return;
       }
+      this.getLoginStatus().catch((err) => this.reconnect());
+      this.timer = setTimeout(heartbeatCallback, nextTime);
+    };
 
-      const gapTime = new Date().getTime() - this.lartestOpTime;
-      if (gapTime < 30000) return;
-
-      if (this.ws && this.ws.readyState === WebSocket.OPEN) {
-        this.getLoginStatus();
-        return;
-      }
-      this.ws && this.ws.close();
-      this.reconnect();
-    }, 20000);
+    this.timer = setTimeout(heartbeatCallback, 30000);
   }
 }

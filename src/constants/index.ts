@@ -32,6 +32,7 @@ enum RequestFunc {
     DELETEMESSAGEFROMLOCALSTORAGE="DeleteMessageFromLocalStorage",
     DELETEMESSAGEFROMLOCALANDSVR="DeleteMessageFromLocalAndSvr",
     DELETECONVERSATIONFROMLOCALANDSVR="DeleteConversationFromLocalAndSvr",
+    DELETEALLCONVERSATIONFROMLOCAL="DeleteAllConversationFromLocal",
     DELETEALLMSGFROMLOCALANDSVR="DeleteAllMsgFromLocalAndSvr",
     DELETEALLMSGFROMLOCAL="DeleteAllMsgFromLocal",
     MARKSINGLEMESSAGEHASREAD="MarkSingleMessageHasRead",
@@ -45,6 +46,7 @@ enum RequestFunc {
     CLEARGROUPHISTORYMESSAGE="ClearGroupHistoryMessage",
     CLEARGROUPHISTORYMESSAGEFROMLOCALANDSVR="ClearGroupHistoryMessageFromLocalAndSvr",
     ADDFRIEND="AddFriend",
+    SEARCHFRIENDS="SearchFriends",
     GETDESIGNATEDFRIENDSINFO="GetDesignatedFriendsInfo",
     GETRECVFRIENDAPPLICATIONLIST="GetRecvFriendApplicationList",
     GETSENDFRIENDAPPLICATIONLIST="GetSendFriendApplicationList",
@@ -77,12 +79,14 @@ enum RequestFunc {
     KICKGROUPMEMBER="KickGroupMember",
     GETGROUPMEMBERSINFO="GetGroupMembersInfo",
     GETGROUPMEMBERLIST="GetGroupMemberList",
+    GETGROUPMEMBERLISTBYJOINTIME="GetGroupMemberListByJoinTime",
     GETJOINEDGROUPLIST="GetJoinedGroupList",
     CREATEGROUP="CreateGroup",
     SETGROUPINFO="SetGroupInfo",
     SETGROUPMEMBERNICKNAME="SetGroupMemberNickname",
     GETGROUPSINFO="GetGroupsInfo",
     JOINGROUP="JoinGroup",
+    SEARCHGROUPS="SearchGroups",
     QUITGROUP="QuitGroup",
     DISMISSGROUP="DismissGroup",
     CHANGEGROUPMUTE="ChangeGroupMute",
@@ -92,12 +96,22 @@ enum RequestFunc {
     GETRECVGROUPAPPLICATIONLIST="GetRecvGroupApplicationList",
     ACCEPTGROUPAPPLICATION="AcceptGroupApplication",
     REFUSEGROUPAPPLICATION="RefuseGroupApplication",
-    SIGNALINGINVITE="SignalingInvite",
+    SIGNAL_INGINVITE="SignalingInvite",
     SIGNALINGINVITEINGROUP = "SignalingInviteInGroup",
     SIGNALINGACCEPT = "SignalingAccept",
     SIGNALINGREJECT = "SignalingReject",
     SIGNALINGCANCEL = "SignalingCancel",
-    SIGNALINGHUNGUP = "SignalingHungUp"
+    SIGNALINGHUNGUP = "SignalingHungUp",
+    GETSUBDEPARTMENT = "GetSubDepartment",
+    GETDEPARTMENTMEMBER = "GetDepartmentMember",
+    GETUSERINDEPARTMENT = "GetUserInDepartment",
+    GETDEPARTMENTMEMBERANDSUBDEPARTMENT = "GetDepartmentMemberAndSubDepartment",
+    GETDEPARTMENTINFO = "GetDepartmentInfo",
+    SEARCHORGANIZATION = "SearchOrganization",
+    RESETCONVERSATIONGROUPATTYPE = "ResetConversationGroupAtType",
+    SETGROUPMEMBERROLELEVEL = "SetGroupMemberRoleLevel",
+    SETGROUPVERIFICATION = "SetGroupVerification",
+    SETGLOBALRECVMESSAGEOPT = "SetGlobalRecvMessageOpt"
 }
 
 enum CbEvents {
@@ -142,9 +156,11 @@ enum CbEvents {
     ONINVITEEACCEPTED = "OnInviteeAccepted",
     ONINVITEEREJECTED = "OnInviteeRejected",
     ONINVITATIONCANCELLED = "OnInvitationCancelled",
+    ONHANGUP = "OnHangUp",
     ONINVITATIONTIMEOUT = "OnInvitationTimeout",
     ONINVITEEACCEPTEDBYOTHERDEVICE = "OnInviteeAcceptedByOtherDevice",
     ONINVITEEREJECTEDBYOTHERDEVICE = "OnInviteeRejectedByOtherDevice",
+    ONORGANIZATIONUPDATED = "OnOrganizationUpdated"
 }
 
 export {
