@@ -1802,6 +1802,7 @@ export default class OpenIMSDK extends Emitter {
   }
 
   private createWs(_onOpen?: Function, _onClose?: Function, _onError?: Function) {
+    console.log("start createWs...");
     return new Promise<void>((resolve, reject) => {
       this.ws?.close();
       this.ws = undefined;
@@ -1813,6 +1814,7 @@ export default class OpenIMSDK extends Emitter {
         };
         this.iLogin(loginData).then((res) => {
           this.logoutFlag = false;
+          console.log("iLogin suc...");
           this.heartbeat();
           resolve();
         });
@@ -1881,20 +1883,25 @@ export default class OpenIMSDK extends Emitter {
   }
 
   private heartbeat() {
+    console.log("start heartbeat...");
+
     if (this.platformID !== 5) return;
     if (this.timer) clearTimeout(this.timer);
 
+    this.heartbeatCount = 0;
     this.heartbeatStartTime = new Date().getTime();
-    
+
     const heartbeatCallback = () => {
-      this.heartbeatCount++;
+      this.heartbeatCount += 1;
       const offset = new Date().getTime() - (this.heartbeatStartTime + this.heartbeatCount * 30000);
+      console.log("offset::::", offset);
+
       let nextTime = 30000 - offset;
       if (nextTime < 0) {
         nextTime = 0;
       }
       if (this.logoutFlag) {
-        this.timer && clearInterval(this.timer);
+        this.timer && clearTimeout(this.timer);
         return;
       }
       this.getLoginStatus().catch((err) => this.reconnect());
