@@ -217,7 +217,7 @@ export type isRecvParams = {
   opt: OptType;
 };
 
-export enum OptType {
+declare export enum OptType {
   Nomal = 0,
   Mute = 1,
   WithoutNotify = 2,
@@ -503,13 +503,13 @@ export type GroupItem = {
   ex: string;
 };
 
-export enum GroupVerificationType {
+declare export enum GroupVerificationType {
   ApplyNeedInviteNot,
   AllNeed,
   AllNot
 }
 
-export enum GroupStatus {
+declare export enum GroupStatus {
   Nomal = 0,
   Baned = 1,
   Dismissed = 2,
@@ -529,7 +529,7 @@ export type GroupMemberItem = {
   ex: string;
 };
 
-export enum GroupRole {
+declare export enum GroupRole {
   Nomal = 1,
   Owner = 2,
   Admin = 3,
@@ -556,7 +556,7 @@ export type ConversationItem = {
   ex: string;
 };
 
-export enum GroupAtType {
+declare export enum GroupAtType {
   AtNormal = 0,
   AtMe = 1,
   AtAll = 2,
@@ -602,13 +602,13 @@ export type MessageItem = {
   downloaded?: boolean;
 };
 
-export enum MessageStatus {
+declare export enum MessageStatus {
   Sending = 1,
   Succeed = 2,
   Failed = 3,
 }
 
-export enum Platform {
+declare export enum Platform {
   iOS = 1,
   Android = 2,
   Windows = 3,
@@ -618,7 +618,7 @@ export enum Platform {
   Admin = 8,
 }
 
-export enum MessageType {
+declare export enum MessageType {
   TEXTMESSAGE = 101,
   PICTUREMESSAGE = 102,
   VOICEMESSAGE = 103,
@@ -663,7 +663,7 @@ export enum MessageType {
   BURNMESSAGECHANGE = 1701,
 }
 
-export enum SessionType {
+declare export enum SessionType {
   Single = 1,
   Group = 2,
   SuperGroup = 3,
@@ -858,3 +858,7 @@ export interface DepartmentMemberSearchItem extends DepartmentMemberItem {
     departmentID:string;
   }
 }
+
+const Types = "Types"
+
+export default Types

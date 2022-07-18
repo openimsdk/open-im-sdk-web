@@ -1,5 +1,5 @@
 import { CbEvents, RequestFunc } from "../constants";
-import { uuid } from "../util";
+import { createWorker, stopWorker, uuid } from "../util";
 import Emitter from "../event";
 import {
   Ws2Promise,
@@ -77,6 +77,7 @@ export default class OpenIMSDK extends Emitter {
   private heartbeatStartTime: number = 0;
   private platformID: number = 0;
   private isBatch: boolean = false;
+  private worker: Worker | null = null;
 
   constructor() {
     super();
@@ -1885,29 +1886,16 @@ export default class OpenIMSDK extends Emitter {
   private heartbeat() {
     console.log("start heartbeat...");
 
-    if (this.platformID !== 5) return;
-    if (this.timer) clearTimeout(this.timer);
-
-    this.heartbeatCount = 0;
-    this.heartbeatStartTime = new Date().getTime();
-
-    const heartbeatCallback = () => {
-      this.heartbeatCount += 1;
-      const offset = new Date().getTime() - (this.heartbeatStartTime + this.heartbeatCount * 30000);
-      console.log("offset::::", offset);
-
-      let nextTime = 30000 - offset;
-      if (nextTime < 0) {
-        nextTime = 0;
-      }
+    const callback = () => {
       if (this.logoutFlag) {
-        this.timer && clearTimeout(this.timer);
+        if (this.worker) {
+          stopWorker(this.worker);
+        }
         return;
       }
       this.getLoginStatus().catch((err) => this.reconnect());
-      this.timer = setTimeout(heartbeatCallback, nextTime);
     };
 
-    this.timer = setTimeout(heartbeatCallback, 30000);
+    this.worker = createWorker(callback, 30000);
   }
 }
