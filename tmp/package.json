@@ -1,6 +1,6 @@
 {
   "name": "open-im-sdk",
-  "version": "2.3.0-rc0",
+  "version": "2.3.0",
   "description": "OpenIM SDK for Web and MiniProgram",
   "main": "index.js",
   "module": "index.esm.js",

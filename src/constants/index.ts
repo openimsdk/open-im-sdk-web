@@ -21,11 +21,13 @@ enum RequestFunc {
     CREATEMERGERMESSAGE="CreateMergerMessage",
     CREATEFORWARDMESSAGE="CreateForwardMessage",
     CREATEQUOTEMESSAGE="CreateQuoteMessage",
+    CREATEADVANCEDQUOTEMESSAGE="CreateAdvancedQuoteMessage",
     CREATECARDMESSAGE="CreateCardMessage",
     CREATEFACEMESSAGE="CreateFaceMessage",
     SENDMESSAGE="SendMessage",
     SENDMESSAGENOTOSS="SendMessageNotOss",
     GETHISTORYMESSAGELIST="GetHistoryMessageList",
+    GETADVANCEDHISTORYMESSAGELIST="GetAdvancedHistoryMessageList",
     GETHISTORYMESSAGELISTREVERSE="GetHistoryMessageListReverse",
     REVOKEMESSAGE="RevokeMessage",
     SETONECONVERSATIONPRIVATECHAT="SetOneConversationPrivateChat",
@@ -79,7 +81,10 @@ enum RequestFunc {
     KICKGROUPMEMBER="KickGroupMember",
     GETGROUPMEMBERSINFO="GetGroupMembersInfo",
     GETGROUPMEMBERLIST="GetGroupMemberList",
-    GETGROUPMEMBERLISTBYJOINTIME="GetGroupMemberListByJoinTime",
+    GETGROUPMEMBERLISTBYJOINTIMEFILTER="GetGroupMemberListByJoinTimeFilter",
+    SEARCHGROUPMEMBERS="SearchGroupMembers",
+    SETGROUPAPPLYMEMBERFRIEND="SetGroupApplyMemberFriend",
+    SETGROUPLOOKMEMBERINFO="SetGroupLookMemberInfo",
     GETJOINEDGROUPLIST="GetJoinedGroupList",
     CREATEGROUP="CreateGroup",
     SETGROUPINFO="SetGroupInfo",
@@ -111,7 +116,9 @@ enum RequestFunc {
     RESETCONVERSATIONGROUPATTYPE = "ResetConversationGroupAtType",
     SETGROUPMEMBERROLELEVEL = "SetGroupMemberRoleLevel",
     SETGROUPVERIFICATION = "SetGroupVerification",
-    SETGLOBALRECVMESSAGEOPT = "SetGlobalRecvMessageOpt"
+    SETGLOBALRECVMESSAGEOPT = "SetGlobalRecvMessageOpt",
+    NEWREVOKEMESSAGE = "NewRevokeMessage",
+    FINDMESSAGELIST = "FindMessageList"
 }
 
 enum CbEvents {
@@ -160,7 +167,9 @@ enum CbEvents {
     ONINVITATIONTIMEOUT = "OnInvitationTimeout",
     ONINVITEEACCEPTEDBYOTHERDEVICE = "OnInviteeAcceptedByOtherDevice",
     ONINVITEEREJECTEDBYOTHERDEVICE = "OnInviteeRejectedByOtherDevice",
-    ONORGANIZATIONUPDATED = "OnOrganizationUpdated"
+    ONORGANIZATIONUPDATED = "OnOrganizationUpdated",
+    ONRECVNEWMESSAGEFROMOTHERWEB = "OnRecvNewMessageFromOtherWeb",
+    ONNEWRECVMESSAGEREVOKED = "OnNewRecvMessageRevoked"
 }
 
 export {

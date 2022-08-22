@@ -32,15 +32,15 @@ export type LoginParams = {
 export type AdvancedMsgParams = {
   text: string;
   messageEntityList?: MessageEntity[];
-}
+};
 
 export type MessageEntity = {
-  type:string;
+  type: string;
   offset: number;
-  length:number;
+  length: number;
   url?: string;
-  userInfo?: PublicUserItem;
-}
+  info?: string;
+};
 
 export type AtMsgParams = {
   text: string;
@@ -145,6 +145,12 @@ export type QuoteMsgParams = {
   message: string;
 };
 
+export type AdvancedQuoteMsgParams = {
+  text: string;
+  message: string;
+  messageEntityList: MessageEntity[]
+};
+
 export type SendMsgParams = {
   recvID: string;
   groupID: string;
@@ -158,6 +164,15 @@ export type GetHistoryMsgParams = {
   count: number;
   startClientMsgID: string;
   conversationID?: string;
+};
+
+export type GetAdvancedHistoryMsgParams = {
+  userID: string;
+  groupID: string;
+  count: number;
+  startClientMsgID: string;
+  conversationID?: string;
+  lastMinSeq: number;
 };
 
 export type setPrvParams = {
@@ -245,7 +260,7 @@ export type SearchFriendParams = {
   isSearchUserID: boolean;
   isSearchNickname: boolean;
   isSearchRemark: boolean;
-}
+};
 
 export type AccessFriendParams = {
   toUserID: string;
@@ -277,12 +292,26 @@ export type GetGroupMemberParams = {
 
 export type GetGroupMemberByTimeParams = {
   groupID: string;
-  filterUserIDList: number;
+  filterUserIDList: string[];
   offset: number;
   count: number;
   joinTimeBegin: number;
   joinTimeEnd: number;
 };
+
+export type SearchGroupMemberParams = {
+  groupID: string;
+  keywordList: string[];
+  isSearchUserID: boolean;
+  isSearchMemberNickname: boolean;
+  offset: number;
+  count: number;
+};
+
+export type SetMemberAuthParams = {
+  rule: AllowType;
+  groupID: string;
+}
 
 export type CreateGroupParams = {
   groupBaseInfo: GroupInitInfo;
@@ -290,7 +319,7 @@ export type CreateGroupParams = {
 };
 
 export type GroupInitInfo = {
-  groupType: number;
+  groupType: GroupType;
   groupName: string;
   introduction?: string;
   notification?: string;
@@ -319,6 +348,7 @@ export type GroupBaseInfo = Partial<Omit<GroupInitInfo, "groupType">>;
 export type JoinGroupParams = {
   groupID: string;
   reqMsg: string;
+  joinSource: GroupJoinSource;
 };
 
 export type SearchGroupParams = {
@@ -353,12 +383,12 @@ export type SetGroupRoleParams = {
   groupID: string;
   userID: string;
   roleLevel: GroupRole;
-}
+};
 
 export type SetGroupVerificationParams = {
   verification: GroupVerificationType;
   groupID: string;
-}
+};
 
 export type RtcInvite = {
   inviterUserID: string;
@@ -438,6 +468,7 @@ export type PublicUserItem = {
   nickname: string;
   userID: string;
   faceURL: string;
+  ex: string;
 };
 
 export type FullUserItem = {
@@ -491,6 +522,8 @@ export type GroupItem = {
   groupID: string;
   groupName: string;
   notification: string;
+  notificationUserID: string;
+  notificationUpdateTime: number;
   introduction: string;
   faceURL: string;
   ownerUserID: string;
@@ -501,12 +534,25 @@ export type GroupItem = {
   groupType: number;
   needVerification: GroupVerificationType;
   ex: string;
+  applyMemberFriend: AllowType;
+  lookMemberInfo: AllowType;
 };
+
+declare export enum AllowType {
+  Allowed,
+  NotAllowed,
+}
+
+declare export enum GroupType {
+  NomalGroup,
+  SuperGroup,
+  WorkingGroup,
+}
 
 declare export enum GroupVerificationType {
   ApplyNeedInviteNot,
   AllNeed,
-  AllNot
+  AllNot,
 }
 
 declare export enum GroupStatus {
@@ -524,10 +570,17 @@ export type GroupMemberItem = {
   roleLevel: GroupRole;
   muteEndTime: number;
   joinTime: number;
-  joinSource: number;
+  joinSource: GroupJoinSource;
+  inviterUserID: string;
   operatorUserID: string;
   ex: string;
 };
+
+declare export enum GroupJoinSource {
+  Invitation = 2,
+  Search = 3,
+  QrCode = 4,
+}
 
 declare export enum GroupRole {
   Nomal = 1,
@@ -561,7 +614,7 @@ declare export enum GroupAtType {
   AtMe = 1,
   AtAll = 2,
   AtAllAtMe = 3,
-  AtGroupNotice = 4
+  AtGroupNotice = 4,
 }
 
 export type MessageItem = {
@@ -634,6 +687,10 @@ declare export enum MessageType {
   TYPINGMESSAGE = 113,
   QUOTEMESSAGE = 114,
   FACEMESSAGE = 115,
+  ADVANCETEXTMESSAGE = 117,
+  ADVANCEREVOKEMESSAGE = 118,
+  CUSTOMMSGNOTTRIGGERCONVERSATION = 119,
+  CUSTOMMSGONLINEONLY = 120,
   FRIENDAPPLICATIONAPPROVED = 1201,
   FRIENDAPPLICATIONREJECTED = 1202,
   FRIENDAPPLICATIONADDED = 1203,
@@ -739,6 +796,7 @@ export type AttachedInfoElem = {
 export type GroupHasReadInfo = {
   hasReadCount: number;
   hasReadUserIDList: string[];
+  groupMemberCount: number;
 };
 
 export type Picture = {
@@ -787,19 +845,19 @@ export type SearchLocalLogData = {
   showName: string;
   sendTime?: string;
   latestMsg?: string;
-}
+};
 
 export type GetSubDepParams = {
   departmentID: string;
   offset: number;
   count: number;
-}
+};
 
 export type SearchInOrzParams = {
   input: SearchInputType;
   offset: number;
   count: number;
-}
+};
 
 export type SearchInputType = {
   keyWord: string;
@@ -810,55 +868,56 @@ export type SearchInputType = {
   isSearchMobile: boolean;
   isSearchEmail: boolean;
   isSearchTelephone: boolean;
-}
+};
 
 export interface DepartmentItem {
-  attachedInfo:     string;
-  createTime:       number;
-  departmentID:     string;
-  departmentType:   number;
-  ex:               string;
-  faceURL:          string;
-  memberNum:        number;
-  name:             string;
-  order:            number;
-  parentID:         string;
+  attachedInfo: string;
+  createTime: number;
+  departmentID: string;
+  departmentType: number;
+  ex: string;
+  faceURL: string;
+  memberNum: number;
+  name: string;
+  order: number;
+  parentID: string;
   subDepartmentNum: number;
 }
 
 export interface DepartmentMemberItem {
-  userID:       string;
-  nickname:     string;
-  englishName:  string;
-  faceURL:      string;
-  gender:       number;
-  mobile:       string;
-  telephone:    string;
-  birth:        number;
-  email:        string;
+  userID: string;
+  nickname: string;
+  englishName: string;
+  faceURL: string;
+  gender: number;
+  mobile: string;
+  telephone: string;
+  birth: number;
+  email: string;
   departmentID: string;
-  order:        number;
-  position:     string;
-  leader:       number;
-  status:       number;
-  createTime:   number;
-  ex:           string;
+  order: number;
+  position: string;
+  leader: number;
+  status: number;
+  createTime: number;
+  ex: string;
   attachedInfo: string;
 }
 
 export interface DepartmentSearchResult {
-  departmentList:DepartmentItem[]
-  departmentMemberList: DepartmentMemberSearchItem[]
+  departmentList: DepartmentItem[];
+  departmentMemberList: DepartmentMemberSearchItem[];
 }
 
 export interface DepartmentMemberSearchItem extends DepartmentMemberItem {
-  departmentName:string;
+  departmentName: string;
   parentDepartmentList: {
-    name:string;
-    departmentID:string;
-  }
+    name: string;
+    departmentID: string;
+  };
 }
 
-const Types = "Types"
-
-export default Types
+export type FindMessageParams = {
+    conversationID: string;
+    clientMsgIDList: string[]
+  }
