@@ -1775,7 +1775,7 @@ export default class OpenIMSDK extends Emitter {
 
   private wsSend = (params: WsParams, resolve: (value: WsResponse | PromiseLike<WsResponse>) => void, reject: (reason?: any) => void) => {
     if (window?.navigator && !window.navigator.onLine) {
-      let errData: WsResponse = {
+      let errData: WsResponseForMiniProgram = {
         event: params.reqFuncName,
         errCode: 113,
         errMsg: "net work error",
