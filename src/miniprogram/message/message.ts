@@ -27,469 +27,564 @@ import {
   sendMessageParams,
   typingStatusUpdateParams,
 } from "./params";
-import { MessageItem, RequestFunc, WsParams } from "open-im-sdk";
+import {
+  MessageItem,
+  RequestFunc,
+  Ws2Promise,
+  WsParams,
+  uuid,
+} from "open-im-sdk";
 import { MessageReceiveOptType } from "../conversation/params";
+import axios from "axios";
 
 export class OpenIMSDK extends Emitter {
+  private uid: string | undefined;
+  private token: string | undefined;
+  private baseUrl: string = "http://localhost:10002";
   // createAdvancedQuoteMessage
   createAdvancedQuoteMessage = (
+    url: string = this.baseUrl,
     data: createAdvancedQuoteMessageParams,
     operationID?: string
   ) => {
     return new Promise<WsParams>((resolve, reject) => {
       const args = {
         data: data,
-        operationID: operationID || "",
+        operationID: operationID || uuid(this.uid as string),
         reqFuncName: RequestFunc.CREATEADVANCEDQUOTEMESSAGE,
-        userID: "userID",
+        userID: this.uid,
       };
-      this.wsSend(args, resolve, reject);
+      this.HttpSend(args, url);
     });
   };
 
   // createAdvancedTextMessage
   createAdvancedTextMessage = (
+    url: string = this.baseUrl,
     data: createAdvancedTextMessageParams,
     operationID?: string
   ) => {
     return new Promise<WsParams>((resolve, reject) => {
       const args = {
         data: data,
-        operationID: operationID || "",
+        operationID: operationID || uuid(this.uid as string),
         reqFuncName: RequestFunc.CREATEADVANCEDTEXTMESSAGE,
-        userID: "userID",
+        userID: this.uid,
       };
-      this.wsSend(args, resolve, reject);
+      this.HttpSend(args, url);
     });
   };
 
   // createCardMessage
-  createCardMessage = (data: createCardMessageParams, operationID?: string) => {
+  createCardMessage = (
+    url: string = this.baseUrl,
+    data: createCardMessageParams,
+    operationID?: string
+  ) => {
     return new Promise<WsParams>((resolve, reject) => {
       const args = {
         data: data,
-        operationID: operationID || "",
+        operationID: operationID || uuid(this.uid as string),
         reqFuncName: RequestFunc.CREATEADVANCEDTEXTMESSAGE,
-        userID: "userID",
+        userID: this.uid,
       };
-      this.wsSend(args, resolve, reject);
+      this.HttpSend(args, url);
     });
   };
 
   // createCustomMessage
   createCustomMessage = (
+    url: string = this.baseUrl,
     data: createCustomMessageParams,
     operationID?: string
   ) => {
     return new Promise<WsParams>((resolve, reject) => {
       const args = {
         data: data,
-        operationID: operationID || "",
+        operationID: operationID || uuid(this.uid as string),
         reqFuncName: RequestFunc.CREATECUSTOMMESSAGE,
-        userID: "userID",
+        userID: this.uid,
       };
-      this.wsSend(args, resolve, reject);
+      this.HttpSend(args, url);
     });
   };
 
   // createFaceMessageWithIndex
   createFaceMessageWithIndex = (
+    url: string = this.baseUrl,
     data: createFaceMessageWithIndexParams,
     operationID?: string
   ) => {
     return new Promise<WsParams>((resolve, reject) => {
       const args = {
         data: data,
-        operationID: operationID || "",
+        operationID: operationID || uuid(this.uid as string),
         reqFuncName: RequestFunc.CREATEFACEMESSAGEWITHINDEX,
-        userID: "userID",
+        userID: this.uid,
       };
-      this.wsSend(args, resolve, reject);
+      this.HttpSend(args, url);
     });
   };
 
   // createFileMessage
-  createFileMessage = (data: createFileMessageParams, operationID?: string) => {
+  createFileMessage = (
+    url: string = this.baseUrl,
+    data: createFileMessageParams,
+    operationID?: string
+  ) => {
     return new Promise<WsParams>((resolve, reject) => {
       const args = {
         data: data,
-        operationID: operationID || "",
+        operationID: operationID || uuid(this.uid as string),
         reqFuncName: RequestFunc.CREATEFACEMESSAGEWITHINDEX,
-        userID: "userID",
+        userID: this.uid,
       };
-      this.wsSend(args, resolve, reject);
+      this.HttpSend(args, url);
     });
   };
 
   // createForwardMessage
-  createForwardMessage = (data: MessageItem, operationID?: string) => {
+  createForwardMessage = (
+    url: string = this.baseUrl,
+    data: MessageItem,
+    operationID?: string
+  ) => {
     return new Promise<WsParams>((resolve, reject) => {
       const args = {
         data: data,
-        operationID: operationID || "",
+        operationID: operationID || uuid(this.uid as string),
         reqFuncName: RequestFunc.CREATEFORWARDMESSAGE,
-        userID: "userID",
+        userID: this.uid,
       };
-      this.wsSend(args, resolve, reject);
+      this.HttpSend(args, url);
     });
   };
 
   // createImageMessage
   createImageMessage = (
+    url: string = this.baseUrl,
     data: createImageMessageParams,
     operationID?: string
   ) => {
     return new Promise<WsParams>((resolve, reject) => {
       const args = {
         data: data,
-        operationID: operationID || "",
+        operationID: operationID || uuid(this.uid as string),
         reqFuncName: RequestFunc.CREATEFORWARDMESSAGE,
-        userID: "userID",
+        userID: this.uid,
       };
-      this.wsSend(args, resolve, reject);
+      this.HttpSend(args, url);
     });
   };
 
   // createLocationMessage
   createLocationMessage = (
+    url: string = this.baseUrl,
     data: createLocationMessageParams,
     operationID?: string
   ) => {
     return new Promise<WsParams>((resolve, reject) => {
       const args = {
         data: data,
-        operationID: operationID || "",
+        operationID: operationID || uuid(this.uid as string),
         reqFuncName: RequestFunc.CREATELOCATIONMESSAGE,
-        userID: "userID",
+        userID: this.uid,
       };
-      this.wsSend(args, resolve, reject);
+      this.HttpSend(args, url);
     });
   };
 
   // createMergeMessage
   createMergeMessage = (
+    url: string = this.baseUrl,
     data: createMergeMessageParams,
     operationID?: string
   ) => {
     return new Promise<WsParams>((resolve, reject) => {
       const args = {
         data: data,
-        operationID: operationID || "",
+        operationID: operationID || uuid(this.uid as string),
         reqFuncName: RequestFunc.CREATEMERGEMESSAGE,
-        userID: "userID",
+        userID: this.uid,
       };
-      this.wsSend(args, resolve, reject);
+      this.HttpSend(args, url);
     });
   };
 
   // createQuoteMessage
   createQuoteMessage = (
+    url: string = this.baseUrl,
     data: createQuoteMessageParams,
     operationID?: string
   ) => {
     return new Promise<WsParams>((resolve, reject) => {
       const args = {
         data: data,
-        operationID: operationID || "",
+        operationID: operationID || uuid(this.uid as string),
         reqFuncName: RequestFunc.CREATEQUOTEMESSAGE,
-        userID: "userID",
+        userID: this.uid,
       };
-      this.wsSend(args, resolve, reject);
+      this.HttpSend(args, url);
     });
   };
 
   // createSoundMessage
   createSoundMessage = (
+    url: string = this.baseUrl,
     data: createSoundMessageParams,
     operationID?: string
   ) => {
     return new Promise<WsParams>((resolve, reject) => {
       const args = {
         data: data,
-        operationID: operationID || "",
+        operationID: operationID || uuid(this.uid as string),
         reqFuncName: RequestFunc.CREATESOUNDMESSAGE,
-        userID: "userID",
+        userID: this.uid,
       };
-      this.wsSend(args, resolve, reject);
+      this.HttpSend(args, url);
     });
   };
 
   // createTextAtMessage
   createTextAtMessage = (
+    url: string = this.baseUrl,
     data: createTextAtMessageParams,
     operationID?: string
   ) => {
     return new Promise<WsParams>((resolve, reject) => {
       const args = {
         data: data,
-        operationID: operationID || "",
+        operationID: operationID || uuid(this.uid as string),
         reqFuncName: RequestFunc.CREATETEXTATMESSAGE,
-        userID: "userID",
+        userID: this.uid,
       };
-      this.wsSend(args, resolve, reject);
+      this.HttpSend(args, url);
     });
   };
 
   // createTextMessage
-  createTextMessage = (text: string, operationID?: string) => {
+  createTextMessage = (
+    url: string = this.baseUrl,
+    text: string,
+    operationID?: string
+  ) => {
     return new Promise<WsParams>((resolve, reject) => {
       const args = {
         data: text,
-        operationID: operationID || "",
+        operationID: operationID || uuid(this.uid as string),
         reqFuncName: RequestFunc.CREATETEXTMESSAGE,
-        userID: "userID",
+        userID: this.uid,
       };
-      this.wsSend(args, resolve, reject);
+      this.HttpSend(args, url);
     });
   };
 
   // createVideoMessage
   createVideoMessage = (
+    url: string = this.baseUrl,
     data: createVideoMessageParams,
     operationID?: string
   ) => {
     return new Promise<WsParams>((resolve, reject) => {
       const args = {
         data: data,
-        operationID: operationID || "",
+        operationID: operationID || uuid(this.uid as string),
         reqFuncName: RequestFunc.CREATEVIDEOMESSAGE,
-        userID: "userID",
+        userID: this.uid,
       };
-      this.wsSend(args, resolve, reject);
+      this.HttpSend(args, url);
     });
   };
 
   // deleteAllMsgFromLocal
-  deleteAllMsgFromLocal = (operationID?: string) => {
+  deleteAllMsgFromLocal = (
+    url: string = this.baseUrl,
+    operationID?: string
+  ) => {
     return new Promise<WsParams>((resolve, reject) => {
       const args = {
         data: "",
-        operationID: operationID || "",
+        operationID: operationID || uuid(this.uid as string),
         reqFuncName: RequestFunc.DELETEALLMSGFROMLOCAL,
-        userID: "userID",
+        userID: this.uid,
       };
-      this.wsSend(args, resolve, reject);
+      this.HttpSend(args, url);
     });
   };
 
   // deleteAllMsgFromLocalAndSvr
-  deleteAllMsgFromLocalAndSvr = (operationID?: string) => {
+  deleteAllMsgFromLocalAndSvr = (
+    url: string = this.baseUrl,
+    operationID?: string
+  ) => {
     return new Promise<WsParams>((resolve, reject) => {
       const args = {
         data: "",
-        operationID: operationID || "",
+        operationID: operationID || uuid(this.uid as string),
         reqFuncName: RequestFunc.DELETEALLMSGFROMLOCALANDSVR,
-        userID: "userID",
+        userID: this.uid,
       };
-      this.wsSend(args, resolve, reject);
+      this.HttpSend(args, url);
     });
   };
 
   // deleteMessage
-  deleteMessage = (data: deleteMessageParams, operationID?: string) => {
+  deleteMessage = (
+    url: string = this.baseUrl,
+    data: deleteMessageParams,
+    operationID?: string
+  ) => {
     return new Promise<WsParams>((resolve, reject) => {
       const args = {
         data: data,
-        operationID: operationID || "",
+        operationID: operationID || uuid(this.uid as string),
         reqFuncName: RequestFunc.DELETEMESSAGE,
-        userID: "userID",
+        userID: this.uid,
       };
-      this.wsSend(args, resolve, reject);
+      this.HttpSend(args, url);
     });
   };
 
   // deleteMessageFromLocalStorage
   deleteMessageFromLocalStorage = (
+    url: string = this.baseUrl,
     data: deleteMessageFromLocalStorageParams,
     operationID?: string
   ) => {
     return new Promise<WsParams>((resolve, reject) => {
       const args = {
         data: data,
-        operationID: operationID || "",
+        operationID: operationID || uuid(this.uid as string),
         reqFuncName: RequestFunc.DELETEMESSAGEFROMLOCALSTORAGE,
-        userID: "userID",
+        userID: this.uid,
       };
-      this.wsSend(args, resolve, reject);
+      this.HttpSend(args, url);
     });
   };
 
   // findMessageList
-  findMessageList = (data: findMessageListParams, operationID?: string) => {
+  findMessageList = (
+    url: string = this.baseUrl,
+    data: findMessageListParams,
+    operationID?: string
+  ) => {
     return new Promise<WsParams>((resolve, reject) => {
       const args = {
         data: data,
-        operationID: operationID || "",
+        operationID: operationID || uuid(this.uid as string),
         reqFuncName: RequestFunc.FINDMESSAGELIST,
-        userID: "userID",
+        userID: this.uid,
       };
-      this.wsSend(args, resolve, reject);
+      this.HttpSend(args, url);
     });
   };
 
   // getAdvancedHistoryMessageList
   getAdvancedHistoryMessageList = (
+    url: string = this.baseUrl,
     data: getAdvancedHistoryMessageListParams,
     operationID?: string
   ) => {
     return new Promise<WsParams>((resolve, reject) => {
       const args = {
         data: data,
-        operationID: operationID || "",
+        operationID: operationID || uuid(this.uid as string),
         reqFuncName: RequestFunc.GETADVANCEDHISTORYMESSAGELIST,
-        userID: "userID",
+        userID: this.uid,
       };
-      this.wsSend(args, resolve, reject);
+      this.HttpSend(args, url);
     });
   };
   // getAdvancedHistoryMessageListReverse
   getAdvancedHistoryMessageListReverse = (
+    url: string = this.baseUrl,
     data: getAdvancedHistoryMessageListReverseParams,
     operationID?: string
   ) => {
     return new Promise<WsParams>((resolve, reject) => {
       const args = {
         data: data,
-        operationID: operationID || "",
+        operationID: operationID || uuid(this.uid as string),
         reqFuncName: RequestFunc.GETADVANCEDHISTORYMESSAGELISTREVERSE,
-        userID: "userID",
+        userID: this.uid,
       };
-      this.wsSend(args, resolve, reject);
+      this.HttpSend(args, url);
     });
   };
 
   // insertGroupMessageToLocalStorage
   insertGroupMessageToLocalStorage = (
+    url: string = this.baseUrl,
     data: insertGroupMessageToLocalStorageParams,
     operationID?: string
   ) => {
     return new Promise<WsParams>((resolve, reject) => {
       const args = {
         data: data,
-        operationID: operationID || "",
+        operationID: operationID || uuid(this.uid as string),
         reqFuncName: RequestFunc.INSERTGROUPMESSAGETOLOCALSTORAGE,
-        userID: "userID",
+        userID: this.uid,
       };
-      this.wsSend(args, resolve, reject);
+      this.HttpSend(args, url);
     });
   };
 
   // insertSingleMessageToLocalStorage
   insertSingleMessageToLocalStorage = (
+    url: string = this.baseUrl,
     data: insertSingleMessageToLocalStorageParams,
     operationID?: string
   ) => {
     return new Promise<WsParams>((resolve, reject) => {
       const args = {
         data: data,
-        operationID: operationID || "",
+        operationID: operationID || uuid(this.uid as string),
         reqFuncName: RequestFunc.INSERTSINGLEMESSAGETOLOCALSTORAGE,
-        userID: "userID",
+        userID: this.uid,
       };
-      this.wsSend(args, resolve, reject);
+      this.HttpSend(args, url);
     });
   };
 
   // markMessageAsReadByMsgID
   markMessageAsReadByMsgID = (
+    url: string = this.baseUrl,
     data: MARKMESSAGEASREADBYMSGIDParams,
     operationID?: string
   ) => {
     return new Promise<WsParams>((resolve, reject) => {
       const args = {
         data: data,
-        operationID: operationID || "",
+        operationID: operationID || uuid(this.uid as string),
         reqFuncName: RequestFunc.MARKMESSAGEASREADBYMSGID,
-        userID: "userID",
+        userID: this.uid,
       };
-      this.wsSend(args, resolve, reject);
+      this.HttpSend(args, url);
     });
   };
 
   // revokeMessage
-  revokeMessage = (data: revokeMessageParams, operationID?: string) => {
+  revokeMessage = (
+    url: string = this.baseUrl,
+    data: revokeMessageParams,
+    operationID?: string
+  ) => {
     return new Promise<WsParams>((resolve, reject) => {
       const args = {
         data: data,
-        operationID: operationID || "",
+        operationID: operationID || uuid(this.uid as string),
         reqFuncName: RequestFunc.MARKMESSAGEASREADBYMSGID,
-        userID: "userID",
+        userID: this.uid,
       };
-      this.wsSend(args, resolve, reject);
+      this.HttpSend(args, url);
     });
   };
 
   // searchLocalMessages
   searchLocalMessages = (
+    url: string = this.baseUrl,
     data: searchLocalMessagesParams,
     operationID?: string
   ) => {
     return new Promise<WsParams>((resolve, reject) => {
       const args = {
         data: data,
-        operationID: operationID || "",
+        operationID: operationID || uuid(this.uid as string),
         reqFuncName: RequestFunc.SEARCHLOCALMESSAGES,
-        userID: "userID",
+        userID: this.uid,
       };
-      this.wsSend(args, resolve, reject);
+      this.HttpSend(args, url);
     });
   };
 
   // sendMessage
-  sendMessage = (data: sendMessageParams, operationID?: string) => {
+  sendMessage = (
+    url: string = this.baseUrl,
+    data: sendMessageParams,
+    operationID?: string
+  ) => {
     return new Promise<WsParams>((resolve, reject) => {
       const args = {
         data: data,
-        operationID: operationID || "",
+        operationID: operationID || uuid(this.uid as string),
         reqFuncName: RequestFunc.SENDMESSAGE,
-        userID: "userID",
+        userID: this.uid,
       };
-      this.wsSend(args, resolve, reject);
+      this.HttpSend(args, url);
     });
   };
 
   // sendMessageNotOss
-  sendMessageNotOss = (data: sendMessageNotOssParams, operationID?: string) => {
+  sendMessageNotOss = (
+    url: string = this.baseUrl,
+    data: sendMessageNotOssParams,
+    operationID?: string
+  ) => {
     return new Promise<WsParams>((resolve, reject) => {
       const args = {
         data: data,
-        operationID: operationID || "",
+        operationID: operationID || uuid(this.uid as string),
         reqFuncName: RequestFunc.SENDMESSAGENOTOSS,
-        userID: "userID",
+        userID: this.uid,
       };
-      this.wsSend(args, resolve, reject);
+      this.HttpSend(args, url);
     });
   };
 
   // setGlobalRecvMessageOpt
   setGlobalRecvMessageOpt = (
+    url: string = this.baseUrl,
     data: MessageReceiveOptType,
     operationID?: string
   ) => {
     return new Promise<WsParams>((resolve, reject) => {
       const args = {
         data: data,
-        operationID: operationID || "",
+        operationID: operationID || uuid(this.uid as string),
         reqFuncName: RequestFunc.SETGLOBALRECVMESSAGEOPT,
-        userID: "userID",
+        userID: this.uid,
       };
-      this.wsSend(args, resolve, reject);
+      this.HttpSend(args, url);
     });
   };
 
   // typingStatusUpdate
   typingStatusUpdate = (
+    url: string = this.baseUrl,
     data: typingStatusUpdateParams,
     operationID?: string
   ) => {
     return new Promise<WsParams>((resolve, reject) => {
       const args = {
         data: data,
-        operationID: operationID || "",
+        operationID: operationID || uuid(this.uid as string),
         reqFuncName: RequestFunc.TYPINGSTATUSUPDATE,
-        userID: "userID",
+        userID: this.uid,
       };
-      this.wsSend(args, resolve, reject);
+      this.HttpSend(args, url);
+    });
+  };
+  //tool methods
+  private HttpSend = (params: WsParams, url: string) => {
+    return new Promise((resolve, reject) => {
+      if (window?.navigator && !window.navigator.onLine) {
+        let errData = {
+          event: params.reqFuncName,
+          errCode: 113,
+          data: "",
+          operationID: params.operationID || "",
+        };
+        reject(errData);
+        return;
+      }
+      axios
+        .post(url, params)
+        .then((response) => {
+          resolve(response.data);
+        })
+        .catch((error) => {
+          reject(error);
+        });
     });
   };
 }
