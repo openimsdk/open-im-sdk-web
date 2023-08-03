@@ -66,6 +66,37 @@ import {
   GetAdvancedHistoryMsgParams,
   FindMessageParams,
 } from "../types";
+import axios from "axios";
+import {
+  SelfUserInfoParams,
+  acceptGroupApplicationParams,
+  addFriendParams,
+  changeGroupToMuteParams,
+  dismissGroupParams,
+  getGroupMemberListByJoinTimeFilterParams,
+  getGroupMemberListParams,
+  getGroupMemberOwnerAndAdminParams,
+  getSpecifiedGroupMembersInfoParams,
+  getSpecifiedGroupsInfoParams,
+  inviteUserToGroupParams,
+  joinGroupParams,
+  kickGroupMemberParams,
+  pageNationParams,
+  refuseGroupApplicationParams,
+  searchFriendParams,
+  searchGroupMembersParams,
+  searchGroupsParams,
+  setFriendRemarkParams,
+  setGroupApplyMemberFriendParams,
+  setGroupInfoParams,
+  setGroupLookMemberInfoParams,
+  setGroupMemberInfoParams,
+  setGroupMemberNicknameParams,
+  setGroupMemberRoleLevelParams,
+  setGroupVerificationParams,
+  transferGroupOwnerParams,
+  upLoadFileParams,
+} from "./params";
 
 export default class OpenIMSDK extends Emitter {
   private ws: WebSocket | undefined;
@@ -84,6 +115,7 @@ export default class OpenIMSDK extends Emitter {
   private platformID: number = 0;
   private isBatch: boolean = false;
   private worker: Worker | null = null;
+  private baseUrl: string = "";
 
   constructor() {
     super();
@@ -225,45 +257,6 @@ export default class OpenIMSDK extends Emitter {
         operationID: _uuid,
         userID: this.uid,
         data: "",
-      };
-      this.wsSend(args, resolve, reject);
-    });
-  };
-
-  getSelfUserInfo = (operationID?: string) => {
-    return new Promise<WsResponse>((resolve, reject) => {
-      const _uuid = operationID || uuid(this.uid as string);
-      const args = {
-        reqFuncName: RequestFunc.GETSELFUSERINFO,
-        operationID: _uuid,
-        userID: this.uid,
-        data: "",
-      };
-      this.wsSend(args, resolve, reject);
-    });
-  };
-
-  getUsersInfo = (data: string[], operationID?: string) => {
-    return new Promise<WsResponse>((resolve, reject) => {
-      const _uuid = operationID || uuid(this.uid as string);
-      const args = {
-        reqFuncName: RequestFunc.GETUSERSINFO,
-        operationID: _uuid,
-        userID: this.uid,
-        data,
-      };
-      this.wsSend(args, resolve, reject);
-    });
-  };
-
-  setSelfInfo = (data: PartialUserItem, operationID?: string) => {
-    return new Promise<WsResponse>((resolve, reject) => {
-      const _uuid = operationID || uuid(this.uid as string);
-      const args = {
-        reqFuncName: RequestFunc.SETSELFINFO,
-        operationID: _uuid,
-        userID: this.uid,
-        data,
       };
       this.wsSend(args, resolve, reject);
     });
@@ -1074,569 +1067,6 @@ export default class OpenIMSDK extends Emitter {
     });
   };
 
-  addFriend = (data: AddFriendParams, operationID?: string) => {
-    return new Promise<WsResponse>((resolve, reject) => {
-      const _uuid = operationID || uuid(this.uid as string);
-      const args = {
-        reqFuncName: RequestFunc.ADDFRIEND,
-        operationID: _uuid,
-        userID: this.uid,
-        data,
-      };
-      this.wsSend(args, resolve, reject);
-    });
-  };
-
-  searchFriends = (data: SearchFriendParams, operationID?: string) => {
-    return new Promise<WsResponse>((resolve, reject) => {
-      const _uuid = operationID || uuid(this.uid as string);
-      const args = {
-        reqFuncName: RequestFunc.SEARCHFRIENDS,
-        operationID: _uuid,
-        userID: this.uid,
-        data,
-      };
-      this.wsSend(args, resolve, reject);
-    });
-  };
-
-  getDesignatedFriendsInfo = (data: string[], operationID?: string) => {
-    return new Promise<WsResponse>((resolve, reject) => {
-      const _uuid = operationID || uuid(this.uid as string);
-      const args = {
-        reqFuncName: RequestFunc.GETDESIGNATEDFRIENDSINFO,
-        operationID: _uuid,
-        userID: this.uid,
-        data,
-      };
-      this.wsSend(args, resolve, reject);
-    });
-  };
-
-  getRecvFriendApplicationList = (operationID?: string) => {
-    return new Promise<WsResponse>((resolve, reject) => {
-      const _uuid = operationID || uuid(this.uid as string);
-      const args = {
-        reqFuncName: RequestFunc.GETRECVFRIENDAPPLICATIONLIST,
-        operationID: _uuid,
-        userID: this.uid,
-        data: "",
-      };
-      this.wsSend(args, resolve, reject);
-    });
-  };
-
-  getSendFriendApplicationList = (operationID?: string) => {
-    return new Promise<WsResponse>((resolve, reject) => {
-      const _uuid = operationID || uuid(this.uid as string);
-      const args = {
-        reqFuncName: RequestFunc.GETSENDFRIENDAPPLICATIONLIST,
-        operationID: _uuid,
-        userID: this.uid,
-        data: "",
-      };
-      this.wsSend(args, resolve, reject);
-    });
-  };
-
-  getFriendList = (operationID?: string) => {
-    return new Promise<WsResponse>((resolve, reject) => {
-      const _uuid = operationID || uuid(this.uid as string);
-      const args = {
-        reqFuncName: RequestFunc.GETFRIENDLIST,
-        operationID: _uuid,
-        userID: this.uid,
-        data: "",
-      };
-      this.wsSend(args, resolve, reject);
-    });
-  };
-
-  setFriendRemark = (data: RemarkFriendParams, operationID?: string) => {
-    return new Promise<WsResponse>((resolve, reject) => {
-      const _uuid = operationID || uuid(this.uid as string);
-      const args = {
-        reqFuncName: RequestFunc.SETFRIENDREMARK,
-        operationID: _uuid,
-        userID: this.uid,
-        data,
-      };
-      this.wsSend(args, resolve, reject);
-    });
-  };
-
-  checkFriend = (data: string[], operationID?: string) => {
-    return new Promise<WsResponse>((resolve, reject) => {
-      const _uuid = operationID || uuid(this.uid as string);
-      const args = {
-        reqFuncName: RequestFunc.CHECKFRIEND,
-        operationID: _uuid,
-        userID: this.uid,
-        data,
-      };
-      this.wsSend(args, resolve, reject);
-    });
-  };
-
-  acceptFriendApplication = (
-    data: AccessFriendParams,
-    operationID?: string
-  ) => {
-    return new Promise<WsResponse>((resolve, reject) => {
-      const _uuid = operationID || uuid(this.uid as string);
-      const args = {
-        reqFuncName: RequestFunc.ACCEPTFRIENDAPPLICATION,
-        operationID: _uuid,
-        userID: this.uid,
-        data,
-      };
-      this.wsSend(args, resolve, reject);
-    });
-  };
-
-  refuseFriendApplication = (
-    data: AccessFriendParams,
-    operationID?: string
-  ) => {
-    return new Promise<WsResponse>((resolve, reject) => {
-      const _uuid = operationID || uuid(this.uid as string);
-      const args = {
-        reqFuncName: RequestFunc.REFUSEFRIENDAPPLICATION,
-        operationID: _uuid,
-        userID: this.uid,
-        data,
-      };
-      this.wsSend(args, resolve, reject);
-    });
-  };
-
-  deleteFriend = (data: string, operationID?: string) => {
-    return new Promise<WsResponse>((resolve, reject) => {
-      const _uuid = operationID || uuid(this.uid as string);
-      const args = {
-        reqFuncName: RequestFunc.DELETEFRIEND,
-        operationID: _uuid,
-        userID: this.uid,
-        data,
-      };
-      this.wsSend(args, resolve, reject);
-    });
-  };
-
-  addBlack = (data: string, operationID?: string) => {
-    return new Promise<WsResponse>((resolve, reject) => {
-      const _uuid = operationID || uuid(this.uid as string);
-      const args = {
-        reqFuncName: RequestFunc.ADDBLACK,
-        operationID: _uuid,
-        userID: this.uid,
-        data,
-      };
-      this.wsSend(args, resolve, reject);
-    });
-  };
-
-  removeBlack = (data: string, operationID?: string) => {
-    return new Promise<WsResponse>((resolve, reject) => {
-      const _uuid = operationID || uuid(this.uid as string);
-      const args = {
-        reqFuncName: RequestFunc.REMOVEBLACK,
-        operationID: _uuid,
-        userID: this.uid,
-        data,
-      };
-      this.wsSend(args, resolve, reject);
-    });
-  };
-
-  getBlackList = (operationID?: string) => {
-    return new Promise<WsResponse>((resolve, reject) => {
-      const _uuid = operationID || uuid(this.uid as string);
-      const args = {
-        reqFuncName: RequestFunc.GETBLACKLIST,
-        operationID: _uuid,
-        userID: this.uid,
-        data: "",
-      };
-      this.wsSend(args, resolve, reject);
-    });
-  };
-
-  inviteUserToGroup = (data: InviteGroupParams, operationID?: string) => {
-    return new Promise<WsResponse>((resolve, reject) => {
-      const _uuid = operationID || uuid(this.uid as string);
-      const tmp: any = { ...data };
-      tmp.userIDList = JSON.stringify(tmp.userIDList);
-      const args = {
-        reqFuncName: RequestFunc.INVITEUSERTOGROUP,
-        operationID: _uuid,
-        userID: this.uid,
-        data: tmp,
-      };
-      this.wsSend(args, resolve, reject);
-    });
-  };
-
-  kickGroupMember = (data: InviteGroupParams, operationID?: string) => {
-    return new Promise<WsResponse>((resolve, reject) => {
-      const _uuid = operationID || uuid(this.uid as string);
-      const tmp: any = { ...data };
-      tmp.userIDList = JSON.stringify(tmp.userIDList);
-      const args = {
-        reqFuncName: RequestFunc.KICKGROUPMEMBER,
-        operationID: _uuid,
-        userID: this.uid,
-        data: tmp,
-      };
-      this.wsSend(args, resolve, reject);
-    });
-  };
-
-  getGroupMembersInfo = (
-    data: Omit<InviteGroupParams, "reason">,
-    operationID?: string
-  ) => {
-    return new Promise<WsResponse>((resolve, reject) => {
-      const _uuid = operationID || uuid(this.uid as string);
-      const tmp: any = { ...data };
-      tmp.userIDList = JSON.stringify(tmp.userIDList);
-      const args = {
-        reqFuncName: RequestFunc.GETGROUPMEMBERSINFO,
-        operationID: _uuid,
-        userID: this.uid,
-        data: tmp,
-      };
-      this.wsSend(args, resolve, reject);
-    });
-  };
-
-  getGroupMemberList = (data: GetGroupMemberParams, operationID?: string) => {
-    return new Promise<WsResponse>((resolve, reject) => {
-      const _uuid = operationID || uuid(this.uid as string);
-      const args = {
-        reqFuncName: RequestFunc.GETGROUPMEMBERLIST,
-        operationID: _uuid,
-        userID: this.uid,
-        data,
-      };
-      this.wsSend(args, resolve, reject);
-    });
-  };
-
-  getGroupMemberListByJoinTimeFilter = (
-    data: GetGroupMemberByTimeParams,
-    operationID?: string
-  ) => {
-    return new Promise<WsResponse>((resolve, reject) => {
-      const _uuid = operationID || uuid(this.uid as string);
-      const tmp: any = { ...data };
-      tmp.filterUserIDList = JSON.stringify(tmp.filterUserIDList);
-      const args = {
-        reqFuncName: RequestFunc.GETGROUPMEMBERLISTBYJOINTIMEFILTER,
-        operationID: _uuid,
-        userID: this.uid,
-        data: tmp,
-      };
-      this.wsSend(args, resolve, reject);
-    });
-  };
-
-  searchGroupMembers = (
-    data: SearchGroupMemberParams,
-    operationID?: string
-  ) => {
-    return new Promise<WsResponse>((resolve, reject) => {
-      const _uuid = operationID || uuid(this.uid as string);
-      const args = {
-        reqFuncName: RequestFunc.SEARCHGROUPMEMBERS,
-        operationID: _uuid,
-        userID: this.uid,
-        data: {
-          searchParam: JSON.stringify(data),
-        },
-      };
-      this.wsSend(args, resolve, reject);
-    });
-  };
-
-  setGroupApplyMemberFriend = (
-    data: SetMemberAuthParams,
-    operationID?: string
-  ) => {
-    return new Promise<WsResponse>((resolve, reject) => {
-      const _uuid = operationID || uuid(this.uid as string);
-      const args = {
-        reqFuncName: RequestFunc.SETGROUPAPPLYMEMBERFRIEND,
-        operationID: _uuid,
-        userID: this.uid,
-        data,
-      };
-      this.wsSend(args, resolve, reject);
-    });
-  };
-
-  setGroupLookMemberInfo = (
-    data: SetMemberAuthParams,
-    operationID?: string
-  ) => {
-    return new Promise<WsResponse>((resolve, reject) => {
-      const _uuid = operationID || uuid(this.uid as string);
-      const args = {
-        reqFuncName: RequestFunc.SETGROUPLOOKMEMBERINFO,
-        operationID: _uuid,
-        userID: this.uid,
-        data,
-      };
-      this.wsSend(args, resolve, reject);
-    });
-  };
-
-  getJoinedGroupList = (operationID?: string) => {
-    return new Promise<WsResponse>((resolve, reject) => {
-      const _uuid = operationID || uuid(this.uid as string);
-      const args = {
-        reqFuncName: RequestFunc.GETJOINEDGROUPLIST,
-        operationID: _uuid,
-        userID: this.uid,
-        data: "",
-      };
-      this.wsSend(args, resolve, reject);
-    });
-  };
-
-  createGroup = (data: CreateGroupParams, operationID?: string) => {
-    return new Promise<WsResponse>((resolve, reject) => {
-      const _uuid = operationID || uuid(this.uid as string);
-      const tmp: any = { ...data };
-      tmp.groupBaseInfo = JSON.stringify(tmp.groupBaseInfo);
-      tmp.memberList = JSON.stringify(tmp.memberList);
-      const args = {
-        reqFuncName: RequestFunc.CREATEGROUP,
-        operationID: _uuid,
-        userID: this.uid,
-        data: tmp,
-      };
-      this.wsSend(args, resolve, reject);
-    });
-  };
-
-  setGroupInfo = (data: GroupInfoParams, operationID?: string) => {
-    return new Promise<WsResponse>((resolve, reject) => {
-      const _uuid = operationID || uuid(this.uid as string);
-      const tmp: any = { ...data };
-      tmp.groupInfo = JSON.stringify(tmp.groupInfo);
-      const args = {
-        reqFuncName: RequestFunc.SETGROUPINFO,
-        operationID: _uuid,
-        userID: this.uid,
-        data: tmp,
-      };
-      this.wsSend(args, resolve, reject);
-    });
-  };
-
-  setGroupMemberNickname = (data: MemberNameParams, operationID?: string) => {
-    return new Promise<WsResponse>((resolve, reject) => {
-      const _uuid = operationID || uuid(this.uid as string);
-      const args = {
-        reqFuncName: RequestFunc.SETGROUPMEMBERNICKNAME,
-        operationID: _uuid,
-        userID: this.uid,
-        data,
-      };
-      this.wsSend(args, resolve, reject);
-    });
-  };
-
-  getGroupsInfo = (data: string[], operationID?: string) => {
-    return new Promise<WsResponse>((resolve, reject) => {
-      const _uuid = operationID || uuid(this.uid as string);
-      const args = {
-        reqFuncName: RequestFunc.GETGROUPSINFO,
-        operationID: _uuid,
-        userID: this.uid,
-        data,
-      };
-      this.wsSend(args, resolve, reject);
-    });
-  };
-
-  joinGroup = (data: JoinGroupParams, operationID?: string) => {
-    return new Promise<WsResponse>((resolve, reject) => {
-      const _uuid = operationID || uuid(this.uid as string);
-      const args = {
-        reqFuncName: RequestFunc.JOINGROUP,
-        operationID: _uuid,
-        userID: this.uid,
-        data,
-      };
-      this.wsSend(args, resolve, reject);
-    });
-  };
-
-  searchGroups = (data: SearchGroupParams, operationID?: string) => {
-    return new Promise<WsResponse>((resolve, reject) => {
-      const _uuid = operationID || uuid(this.uid as string);
-      const args = {
-        reqFuncName: RequestFunc.SEARCHGROUPS,
-        operationID: _uuid,
-        userID: this.uid,
-        data,
-      };
-      this.wsSend(args, resolve, reject);
-    });
-  };
-
-  quitGroup = (data: string, operationID?: string) => {
-    return new Promise<WsResponse>((resolve, reject) => {
-      const _uuid = operationID || uuid(this.uid as string);
-      const args = {
-        reqFuncName: RequestFunc.QUITGROUP,
-        operationID: _uuid,
-        userID: this.uid,
-        data,
-      };
-      this.wsSend(args, resolve, reject);
-    });
-  };
-
-  dismissGroup = (data: string, operationID?: string) => {
-    return new Promise<WsResponse>((resolve, reject) => {
-      const _uuid = operationID || uuid(this.uid as string);
-      const args = {
-        reqFuncName: RequestFunc.DISMISSGROUP,
-        operationID: _uuid,
-        userID: this.uid,
-        data,
-      };
-      this.wsSend(args, resolve, reject);
-    });
-  };
-
-  changeGroupMute = (data: ChangeGroupMuteParams, operationID?: string) => {
-    return new Promise<WsResponse>((resolve, reject) => {
-      const _uuid = operationID || uuid(this.uid as string);
-      const args = {
-        reqFuncName: RequestFunc.CHANGEGROUPMUTE,
-        operationID: _uuid,
-        userID: this.uid,
-        data,
-      };
-      this.wsSend(args, resolve, reject);
-    });
-  };
-
-  changeGroupMemberMute = (
-    data: ChangeGroupMemberMuteParams,
-    operationID?: string
-  ) => {
-    return new Promise<WsResponse>((resolve, reject) => {
-      const _uuid = operationID || uuid(this.uid as string);
-      const args = {
-        reqFuncName: RequestFunc.CHANGEGROUPMEMBERMUTE,
-        operationID: _uuid,
-        userID: this.uid,
-        data,
-      };
-      this.wsSend(args, resolve, reject);
-    });
-  };
-
-  transferGroupOwner = (data: TransferGroupParams, operationID?: string) => {
-    return new Promise<WsResponse>((resolve, reject) => {
-      const _uuid = operationID || uuid(this.uid as string);
-      const args = {
-        reqFuncName: RequestFunc.TRANSFERGROUPOWNER,
-        operationID: _uuid,
-        userID: this.uid,
-        data,
-      };
-      this.wsSend(args, resolve, reject);
-    });
-  };
-
-  getSendGroupApplicationList = (operationID?: string) => {
-    return new Promise<WsResponse>((resolve, reject) => {
-      const _uuid = operationID || uuid(this.uid as string);
-      const args = {
-        reqFuncName: RequestFunc.GETSENDGROUPAPPLICATIONLIST,
-        operationID: _uuid,
-        userID: this.uid,
-        data: "",
-      };
-      this.wsSend(args, resolve, reject);
-    });
-  };
-
-  getRecvGroupApplicationList = (operationID?: string) => {
-    return new Promise<WsResponse>((resolve, reject) => {
-      const _uuid = operationID || uuid(this.uid as string);
-      const args = {
-        reqFuncName: RequestFunc.GETRECVGROUPAPPLICATIONLIST,
-        operationID: _uuid,
-        userID: this.uid,
-        data: "",
-      };
-      this.wsSend(args, resolve, reject);
-    });
-  };
-
-  acceptGroupApplication = (data: AccessGroupParams, operationID?: string) => {
-    return new Promise<WsResponse>((resolve, reject) => {
-      const _uuid = operationID || uuid(this.uid as string);
-      const args = {
-        reqFuncName: RequestFunc.ACCEPTGROUPAPPLICATION,
-        operationID: _uuid,
-        userID: this.uid,
-        data,
-      };
-      this.wsSend(args, resolve, reject);
-    });
-  };
-
-  refuseGroupApplication = (data: AccessGroupParams, operationID?: string) => {
-    return new Promise<WsResponse>((resolve, reject) => {
-      const _uuid = operationID || uuid(this.uid as string);
-      const args = {
-        reqFuncName: RequestFunc.REFUSEGROUPAPPLICATION,
-        operationID: _uuid,
-        userID: this.uid,
-        data,
-      };
-      this.wsSend(args, resolve, reject);
-    });
-  };
-
-  signalingInvite = (data: RtcInvite, operationID?: string) => {
-    return new Promise<WsResponse>((resolve, reject) => {
-      const _uuid = operationID || uuid(this.uid as string);
-      const tmp: any = {};
-      tmp.invitation = data;
-      const args = {
-        reqFuncName: RequestFunc.SIGNAL_INGINVITE,
-        operationID: _uuid,
-        userID: this.uid,
-        data: tmp,
-      };
-      this.wsSend(args, resolve, reject);
-    });
-  };
-
-  signalingInviteInGroup = (data: RtcInvite, operationID?: string) => {
-    return new Promise<WsResponse>((resolve, reject) => {
-      const _uuid = operationID || uuid(this.uid as string);
-      const tmp: any = {};
-      tmp.invitation = data;
-      const args = {
-        reqFuncName: RequestFunc.SIGNALINGINVITEINGROUP,
-        operationID: _uuid,
-        userID: this.uid,
-        data: tmp,
-      };
-      this.wsSend(args, resolve, reject);
-    });
-  };
-
   signalingAccept = (data: RtcActionParams, operationID?: string) => {
     return new Promise<WsResponse>((resolve, reject) => {
       const _uuid = operationID || uuid(this.uid as string);
@@ -1768,51 +1198,6 @@ export default class OpenIMSDK extends Emitter {
         operationID: _uuid,
         userID: this.uid,
         data: tmp,
-      };
-      this.wsSend(args, resolve, reject);
-    });
-  };
-
-  resetConversationGroupAtType = (data: string, operationID?: string) => {
-    return new Promise<WsResponse>((resolve, reject) => {
-      const _uuid = operationID || uuid(this.uid as string);
-      const args = {
-        reqFuncName: RequestFunc.RESETCONVERSATIONGROUPATTYPE,
-        operationID: _uuid,
-        userID: this.uid,
-        data,
-      };
-      this.wsSend(args, resolve, reject);
-    });
-  };
-
-  setGroupMemberRoleLevel = (
-    data: SetGroupRoleParams,
-    operationID?: string
-  ) => {
-    return new Promise<WsResponse>((resolve, reject) => {
-      const _uuid = operationID || uuid(this.uid as string);
-      const args = {
-        reqFuncName: RequestFunc.SETGROUPMEMBERROLELEVEL,
-        operationID: _uuid,
-        userID: this.uid,
-        data,
-      };
-      this.wsSend(args, resolve, reject);
-    });
-  };
-
-  setGroupVerification = (
-    data: SetGroupVerificationParams,
-    operationID?: string
-  ) => {
-    return new Promise<WsResponse>((resolve, reject) => {
-      const _uuid = operationID || uuid(this.uid as string);
-      const args = {
-        reqFuncName: RequestFunc.SETGROUPVERIFICATION,
-        operationID: _uuid,
-        userID: this.uid,
-        data,
       };
       this.wsSend(args, resolve, reject);
     });
@@ -1993,16 +1378,20 @@ export default class OpenIMSDK extends Emitter {
     const uflag = typeof uni;
     //@ts-ignore
     const xflag = typeof wx;
+    //@ts-ignore
+    const mflag = typeof miniprogram;
 
     if (wflag !== "undefined") {
       this.platform = "web";
       return;
     }
 
-    if (uflag === "object" && xflag !== "object") {
+    if (uflag === "object" && xflag !== "object" && mflag !== "object") {
       this.platform = "uni";
-    } else if (uflag !== "object" && xflag === "object") {
+    } else if (uflag !== "object" && xflag === "object" && mflag !== "object") {
       this.platform = "wx";
+    } else if (uflag !== "object" && xflag === "object" && mflag !== "object") {
+      this.platform = "miniProgram";
     } else {
       this.platform = "unknow";
     }
@@ -2133,4 +1522,865 @@ export default class OpenIMSDK extends Emitter {
       this.worker = createWorker(callback, 10000);
     } catch (error) {}
   }
+
+  // TODO @me
+  // http tool
+  private HttpSend = (
+    params: WsParams,
+    url: string,
+    resolve: (value: WsResponse | PromiseLike<WsResponse>) => void,
+    reject: (reason?: any) => void
+  ) => {
+    return new Promise<WsResponse>((resolve, reject) => {
+      if (window?.navigator && !window.navigator.onLine) {
+        let errData = {
+          event: params.reqFuncName,
+          errCode: 113,
+          data: "",
+          operationID: params.operationID || "",
+        };
+        reject(errData);
+        return;
+      }
+      axios
+        .post(url, params)
+        .then((response) => {
+          resolve(response.data);
+        })
+        .catch((error) => {
+          reject(error);
+        });
+    });
+  };
+  // Judge a friend
+  judgeFriend = (
+    url: string,
+    userID: string,
+    otherUserID: string,
+    operationID?: string
+  ) => {
+    return new Promise<WsResponse>((resolve, reject) => {
+      const args = {
+        reqFuncName: RequestFunc.GETSELFUSERINFO,
+        operationID: operationID || uuid(this.uid as string),
+        userID: userID || this.uid,
+        data: { otherUserID },
+      };
+      this.HttpSend(args, url, resolve, reject);
+    });
+  };
+  // add a friend
+  addFriend = (url: string, data: addFriendParams, operationID?: string) => {
+    return new Promise<WsResponse>((resolve, reject) => {
+      const args = {
+        data: data,
+        operationID: operationID || uuid(this.uid as string),
+        reqFuncName: RequestFunc.ADDFRIEND,
+        userID: this.uid,
+      };
+      this.HttpSend(args, url, resolve, reject);
+    });
+  };
+  // add a Friend to Black
+  addFriendToBlack = (url: string, operationID?: string) => {
+    return new Promise<WsResponse>((resolve, reject) => {
+      const args = {
+        data: "",
+        operationID: operationID || uuid(this.uid as string),
+        reqFuncName: RequestFunc.ADDFRIENDTOBALCK,
+        userID: this.uid,
+      };
+      this.HttpSend(args, url, resolve, reject);
+    });
+  };
+  // checkFriend whether in or not is other's friend list
+  checkFriendExists = (
+    url: string,
+    userIDList: string[],
+    operationID?: string
+  ) => {
+    return new Promise<WsResponse>((resolve, reject) => {
+      const _uuid = operationID || uuid(this.uid as string);
+      const args = {
+        data: userIDList,
+        operationID: operationID || uuid(this.uid as string),
+        reqFuncName: RequestFunc.CHECKFRIENDEXISTS,
+        userID: this.uid,
+      };
+      this.HttpSend(args, url, resolve, reject);
+    });
+  };
+
+  //delete a friend
+  deleteFriend = (url: string, userID: string, operationID?: string) => {
+    return new Promise<WsResponse>((resolve, reject) => {
+      const args = {
+        userID: userID || this.uid,
+        operationID: operationID || uuid(this.uid as string),
+        reqFuncName: RequestFunc.DELETEFRIEND,
+        data: "",
+      };
+      this.HttpSend(args, url, resolve, reject);
+    });
+  };
+
+  //get friend black list
+  getFriendBlackList = (
+    url: string,
+    userID: string,
+    pageNation: pageNationParams,
+    operationID?: string
+  ) => {
+    return new Promise<WsResponse>((resolve, reject) => {
+      const args = {
+        userID: userID || this.uid,
+        reqFuncName: RequestFunc.GETSPECIFIEDFRIENDINFO,
+        data: pageNation,
+        operationID: operationID || uuid(this.uid as string),
+      };
+      this.HttpSend(args, url, resolve, reject);
+    });
+  };
+
+  //get friend list
+  getFriendList = (
+    url: string,
+    userID: string,
+    pageNation: pageNationParams,
+    operationID?: string
+  ) => {
+    return new Promise<WsResponse>((resolve, reject) => {
+      const args = {
+        userID: userID || this.uid,
+        reqFuncName: RequestFunc.GETSPECIFIEDFRIENDINFO,
+        data: pageNation,
+        operationID: operationID || uuid(this.uid as string),
+      };
+      this.HttpSend(args, url, resolve, reject);
+    });
+  };
+
+  //get Receive Friend Apply List
+  getRecvFriendApplicationList = (
+    url: string,
+    userID: string,
+    pageNation: pageNationParams,
+    operationID?: string
+  ) => {
+    return new Promise<WsResponse>((resolve, reject) => {
+      const args = {
+        userID: userID || this.uid,
+        reqFuncName: RequestFunc.GETSPECIFIEDFRIENDINFO,
+        data: pageNation,
+        operationID: operationID || uuid(this.uid as string),
+      };
+      this.HttpSend(args, url, resolve, reject);
+    });
+  };
+
+  //get Send Friend Apply List
+  getSendFriendApplicationList = (
+    url: string,
+    userID: string,
+    pageNation: pageNationParams,
+    operationID?: string
+  ) => {
+    return new Promise<WsResponse>((resolve, reject) => {
+      const args = {
+        userID: userID || this.uid,
+        reqFuncName: RequestFunc.GETSPECIFIEDFRIENDINFO,
+        data: pageNation,
+        operationID: operationID || uuid(this.uid as string),
+      };
+      this.HttpSend(args, url, resolve, reject);
+    });
+  };
+
+  // get specifically friends information
+  getSpecifiedFriendsInfo = (
+    url: string,
+    userID: string,
+    pageNation: pageNationParams,
+    operationID?: string
+  ) => {
+    return new Promise<WsResponse>((resolve, reject) => {
+      const args = {
+        userID: userID || this.uid,
+        reqFuncName: RequestFunc.GETSPECIFIEDFRIENDINFO,
+        data: pageNation,
+        operationID: operationID || uuid(this.uid as string),
+      };
+      this.HttpSend(args, url, resolve, reject);
+    });
+  };
+
+  // accept a friend's apply
+  acceptFriendApplication = (
+    url: string,
+    toUserID: string,
+    handleMsg: string,
+    operationID?: string
+  ) => {
+    return new Promise<WsResponse>((resolve, reject) => {
+      const args = {
+        userID: this.uid,
+        operationID: operationID || uuid(this.uid as string),
+        reqFuncName: RequestFunc.ACCEPTFRIENDAPPLICATION,
+        data: { handledMsg: handleMsg, toUserID: toUserID },
+      };
+      this.HttpSend(args, url, resolve, reject);
+    });
+  };
+
+  // refuse friend apply
+  refuseFriendApplication = (
+    url: string,
+    toUserID: string,
+    handleMsg: string,
+    operationID?: string
+  ) => {
+    return new Promise<WsResponse>((resolve, reject) => {
+      const args = {
+        operationID: operationID || uuid(this.uid as string),
+        reqFuncName: RequestFunc.REFUSEFRIENDAPPLICATION,
+        data: { handledMsg: handleMsg, toUserID: toUserID },
+        userID: this.uid,
+      };
+      this.HttpSend(args, url, resolve, reject);
+    });
+  };
+
+  // remove friend from black list
+  removeBlack = (url: string, userID: string, operationID?: string) => {
+    return new Promise<WsResponse>((resolve, reject) => {
+      const args = {
+        data: "",
+        operationID: operationID || uuid(this.uid as string),
+        reqFuncName: RequestFunc.REMOVEBLACK,
+        userID: userID || this.uid,
+      };
+      this.HttpSend(args, url, resolve, reject);
+    });
+  };
+
+  // search friends by specified key word
+  searchFriends = (
+    url: string,
+    data: searchFriendParams,
+    operationID?: string
+  ) => {
+    return new Promise<WsResponse>((resolve, reject) => {
+      const args = {
+        data: data,
+        operationID: operationID || uuid(this.uid as string),
+        reqFuncName: RequestFunc.SEARCHFRIENDS,
+        userID: this.uid,
+      };
+      this.HttpSend(args, url, resolve, reject);
+    });
+  };
+
+  // set friend remark
+  setFriendRemark = (
+    url: string,
+    data: setFriendRemarkParams,
+    operationID?: string
+  ) => {
+    return new Promise<WsResponse>((resolve, reject) => {
+      const args = {
+        data: data,
+        operationID: operationID || uuid(this.uid as string),
+        userID: this.uid,
+        reqFuncName: RequestFunc.SETFRIENDREMARK,
+      };
+      this.HttpSend(args, url, resolve, reject);
+    });
+  };
+
+  // TODO @me group
+  // accept group application
+  acceptGroupApplication = (
+    url: string,
+    data: acceptGroupApplicationParams,
+    operationID: string
+  ) => {
+    return new Promise<WsResponse>((resolve, reject) => {
+      const args = {
+        data: data,
+        reqFuncName: RequestFunc.ACCEPTGROUPAPPLICATION,
+        operationID: operationID,
+        userID: this.uid,
+      };
+      this.HttpSend(args, url, resolve, reject);
+    });
+  };
+
+  // change GroupMember to Mute
+  changeGroupMemberMute = (
+    url: string,
+    data: ChangeGroupMemberMuteParams,
+    operationID: string
+  ) => {
+    return new Promise<WsResponse>((resolve, reject) => {
+      const args = {
+        data: data,
+        operationID: operationID,
+        userID: this.uid,
+        reqFuncName: RequestFunc.CHANGEGROUPMEMBERMUTE,
+      };
+      this.HttpSend(args, url, resolve, reject);
+    });
+  };
+
+  // changeGroup to Mute
+  changeGroupToMute = (
+    url: string,
+    data: changeGroupToMuteParams,
+    operationID: string
+  ) => {
+    return new Promise<WsResponse>((resolve, reject) => {
+      const args = {
+        data: data,
+        operationID: operationID,
+        userID: this.uid,
+        reqFuncName: RequestFunc.CHANGEGROUPTOMUTE,
+      };
+      this.HttpSend(args, url, resolve, reject);
+    });
+  };
+
+  // create a Group
+  createGroup = (
+    url: string,
+    data: changeGroupToMuteParams,
+    operationID: string
+  ) => {
+    return new Promise<WsResponse>((resolve, reject) => {
+      const args = {
+        data: data,
+        operationID: operationID,
+        userID: this.uid,
+        reqFuncName: RequestFunc.CREATEGROUP,
+      };
+      this.HttpSend(args, url, resolve, reject);
+    });
+  };
+
+  // dismiss a group
+  dismissGroup = (
+    url: string,
+    data: dismissGroupParams,
+    operationID: string
+  ) => {
+    return new Promise<WsResponse>((resolve, reject) => {
+      const args = {
+        data: data,
+        operationID: operationID,
+        userID: this.uid,
+        reqFuncName: RequestFunc.DISMISSGROUP,
+      };
+      this.HttpSend(args, url, resolve, reject);
+    });
+  };
+
+  // get Group ApplicationList As Applicant
+  getGroupApplicationListAsApplicant = (url: string, operationID: string) => {
+    return new Promise<WsResponse>((resolve, reject) => {
+      const args = {
+        operationID: operationID,
+        userID: this.uid,
+        reqFuncName: RequestFunc.GETGROUPAPPLICATIONLISTASAPPLICANT,
+        data: "",
+      };
+      this.HttpSend(args, url, resolve, reject);
+    });
+  };
+
+  // getGroupApplicationList As Recipient
+  getGroupApplicationListAsRecipient = (url: string, operationID: string) => {
+    return new Promise<WsResponse>((resolve, reject) => {
+      const args = {
+        operationID: operationID,
+        userID: this.uid,
+        reqFuncName: RequestFunc.GETGROUPAPPLICATIONLISTASRECIPIENT,
+        data: "",
+      };
+      this.HttpSend(args, url, resolve, reject);
+    });
+  };
+
+  // getGroupMemberList
+  getGroupMemberList = (
+    url: string,
+    data: getGroupMemberListParams,
+    operationID: string
+  ) => {
+    return new Promise<WsResponse>((resolve, reject) => {
+      const args = {
+        data: data,
+        operationID: operationID,
+        userID: this.uid,
+        reqFuncName: RequestFunc.GETGROUPMEMBERLIST,
+      };
+      this.HttpSend(args, url, resolve, reject);
+    });
+  };
+
+  // getGroupMemberListByJoinTimeFilter
+  getGroupMemberListByJoinTimeFilter = (
+    url: string,
+    data: getGroupMemberListByJoinTimeFilterParams,
+    operationID: string
+  ) => {
+    return new Promise<WsResponse>((resolve, reject) => {
+      const args = {
+        data: data,
+        operationID: operationID,
+        userID: this.uid,
+        reqFuncName: RequestFunc.GETGROUPMEMBERLISTBYJOINTIMEFILTER,
+      };
+      this.HttpSend(args, url, resolve, reject);
+    });
+  };
+
+  // getGroupMemberOwnerAndAdmin
+  getGroupMemberOwnerAndAdmin = (
+    url: string,
+    data: getGroupMemberOwnerAndAdminParams,
+    operationID: string
+  ) => {
+    return new Promise<WsResponse>((resolve, reject) => {
+      const args = {
+        data: data,
+        operationID: operationID,
+        userID: this.uid,
+        reqFuncName: RequestFunc.GETGROUPMEMBEROWNERANDADMIN,
+      };
+      this.HttpSend(args, url, resolve, reject);
+    });
+  };
+
+  // get JoinedGroupList
+  getJoinedGroupList = (url: string, operationID: string) => {
+    return new Promise<WsResponse>((resolve, reject) => {
+      const args = {
+        operationID: operationID,
+        userID: this.uid,
+        reqFuncName: RequestFunc.GETJOINEDGROUPLIST,
+        data: "",
+      };
+      this.HttpSend(args, url, resolve, reject);
+    });
+  };
+
+  // get SpecifiedGroupMembersInfo
+  getSpecifiedGroupMembersInfo = (
+    url: string,
+    data: getSpecifiedGroupMembersInfoParams,
+    operationID: string
+  ) => {
+    return new Promise<WsResponse>((resolve, reject) => {
+      const args = {
+        data: data,
+        operationID: operationID,
+        userID: this.uid,
+        reqFuncName: RequestFunc.GETSPECIFIEDGROUPMEMBERSINFO,
+      };
+      this.HttpSend(args, url, resolve, reject);
+    });
+  };
+
+  // get SpecifiedGroupsInfo
+  getSpecifiedGroupsInfo = (
+    url: string,
+    data: getSpecifiedGroupsInfoParams,
+    operationID: string
+  ) => {
+    return new Promise<WsResponse>((resolve, reject) => {
+      const args = {
+        data: data,
+        operationID: operationID,
+        userID: this.uid,
+        reqFuncName: RequestFunc.GETSPECIFIEDGROUPSINFO,
+      };
+      this.HttpSend(args, url, resolve, reject);
+    });
+  };
+
+  // inviteUser To Group
+  inviteUserToGroup = (
+    url: string,
+    data: inviteUserToGroupParams,
+    operationID: string
+  ) => {
+    return new Promise<WsResponse>((resolve, reject) => {
+      const args = {
+        data: data,
+        operationID: operationID,
+        userID: this.uid,
+        reqFuncName: RequestFunc.INVITEUSERTOGROUP,
+      };
+      this.HttpSend(args, url, resolve, reject);
+    });
+  };
+
+  // joinGroup
+  joinGroup = (url: string, data: joinGroupParams, operationID: string) => {
+    return new Promise<WsResponse>((resolve, reject) => {
+      const args = {
+        data: data,
+        operationID: operationID,
+        userID: this.uid,
+        reqFuncName: RequestFunc.JOINGROUP,
+      };
+      this.HttpSend(args, url, resolve, reject);
+    });
+  };
+
+  // kick GroupMember
+  kickGroupMember = (
+    url: string,
+    data: kickGroupMemberParams,
+    operationID: string
+  ) => {
+    return new Promise<WsResponse>((resolve, reject) => {
+      const args = {
+        data: data,
+        operationID: operationID,
+        userID: this.uid,
+        reqFuncName: RequestFunc.KICKGROUPMEMBER,
+      };
+      this.HttpSend(args, url, resolve, reject);
+    });
+  };
+
+  // quitGroup
+  quitGroup = (
+    url: string,
+    data: kickGroupMemberParams,
+    operationID: string
+  ) => {
+    return new Promise<WsResponse>((resolve, reject) => {
+      const args = {
+        data: data,
+        operationID: operationID,
+        userID: this.uid,
+        reqFuncName: RequestFunc.QUITGROUP,
+      };
+      this.HttpSend(args, url, resolve, reject);
+    });
+  };
+
+  // refuse a  GroupApplication
+  refuseGroupApplication = (
+    url: string,
+    data: refuseGroupApplicationParams,
+    operationID: string
+  ) => {
+    return new Promise<WsResponse>((resolve, reject) => {
+      const args = {
+        data: data,
+        operationID: operationID,
+        userID: this.uid,
+        reqFuncName: RequestFunc.REFUSEGROUPAPPLICATION,
+      };
+      this.HttpSend(args, url, resolve, reject);
+    });
+  };
+
+  // searchGroupMembers
+  searchGroupMembers = (
+    url: string,
+    data: searchGroupMembersParams,
+    operationID: string
+  ) => {
+    return new Promise<WsResponse>((resolve, reject) => {
+      const args = {
+        data: data,
+        operationID: operationID,
+        userID: this.uid,
+        reqFuncName: RequestFunc.SEARCHGROUPMEMBERS,
+      };
+      this.HttpSend(args, url, resolve, reject);
+    });
+  };
+
+  // searchGroups
+  searchGroups = (
+    url: string,
+    data: searchGroupsParams,
+    operationID: string
+  ) => {
+    return new Promise<WsResponse>((resolve, reject) => {
+      const args = {
+        data: data,
+        operationID: operationID,
+        userID: this.uid,
+        reqFuncName: RequestFunc.SEARCHGROUPS,
+      };
+      this.HttpSend(args, url, resolve, reject);
+    });
+  };
+
+  //set GroupApplyMemberFriend
+  setGroupApplyMemberFriend = (
+    url: string,
+    data: setGroupApplyMemberFriendParams,
+    operationID: string
+  ) => {
+    return new Promise<WsResponse>((resolve, reject) => {
+      const args = {
+        data: data,
+        operationID: operationID,
+        userID: this.uid,
+        reqFuncName: RequestFunc.SETGROUPAPPLYMEMBERFRIEND,
+      };
+      this.HttpSend(args, url, resolve, reject);
+    });
+  };
+
+  // setGroupInfo
+  setGroupInfo = (
+    url: string,
+    data: setGroupInfoParams,
+    operationID: string
+  ) => {
+    return new Promise<WsResponse>((resolve, reject) => {
+      const args = {
+        data: data,
+        operationID: operationID,
+        userID: this.uid,
+        reqFuncName: RequestFunc.SETGROUPINFO,
+      };
+      this.HttpSend(args, url, resolve, reject);
+    });
+  };
+
+  // setGroupLookMemberInfo
+  setGroupLookMemberInfo = (
+    url: string,
+    data: setGroupLookMemberInfoParams,
+    operationID: string
+  ) => {
+    return new Promise<WsResponse>((resolve, reject) => {
+      const args = {
+        data: data,
+        operationID: operationID,
+        userID: this.uid,
+        reqFuncName: RequestFunc.SETGROUPLOOKMEMBERINFO,
+      };
+      this.HttpSend(args, url, resolve, reject);
+    });
+  };
+
+  // setGroupMemberInfo
+  setGroupMemberInfo = (
+    url: string,
+    data: setGroupMemberInfoParams,
+    operationID: string
+  ) => {
+    return new Promise<WsResponse>((resolve, reject) => {
+      const args = {
+        data: data,
+        operationID: operationID,
+        userID: this.uid,
+        reqFuncName: RequestFunc.GETGROUPMEMBERSINFO,
+      };
+      this.HttpSend(args, url, resolve, reject);
+    });
+  };
+
+  // setGroupMemberNickname
+  setGroupMemberNickname = (
+    url: string,
+    data: setGroupMemberNicknameParams,
+    operationID: string
+  ) => {
+    return new Promise<WsResponse>((resolve, reject) => {
+      const args = {
+        data: data,
+        operationID: operationID,
+        userID: this.uid,
+        reqFuncName: RequestFunc.SETGROUPMEMBERNICKNAME,
+      };
+      this.HttpSend(args, url, resolve, reject);
+    });
+  };
+
+  // setGroupMemberRoleLevel
+  setGroupMemberRoleLevel = (
+    url: string,
+    data: setGroupMemberRoleLevelParams,
+    operationID: string
+  ) => {
+    return new Promise<WsResponse>((resolve, reject) => {
+      const args = {
+        data: data,
+        operationID: operationID,
+        userID: this.uid,
+        reqFuncName: RequestFunc.SETGROUPMEMBERROLELEVEL,
+      };
+      this.HttpSend(args, url, resolve, reject);
+    });
+  };
+
+  // setGroupVerification
+  setGroupVerification = (
+    url: string,
+    data: setGroupVerificationParams,
+    operationID: string
+  ) => {
+    return new Promise<WsResponse>((resolve, reject) => {
+      const args = {
+        data: data,
+        operationID: operationID,
+        userID: this.uid,
+        reqFuncName: RequestFunc.SETGROUPVERIFICATION,
+      };
+      this.HttpSend(args, url, resolve, reject);
+    });
+  };
+
+  // transferGroupOwner
+  transferGroupOwner = (
+    url: string,
+    data: transferGroupOwnerParams,
+    operationID: string
+  ) => {
+    return new Promise<WsResponse>((resolve, reject) => {
+      const args = {
+        data: data,
+        operationID: operationID,
+        userID: this.uid,
+        reqFuncName: RequestFunc.TRANSFERGROUPOWNER,
+      };
+      this.HttpSend(args, url, resolve, reject);
+    });
+  };
+
+  // TODO add user info
+  // set user information
+  setSelfInfo = (
+    url: string,
+    userInfo: SelfUserInfoParams,
+    operationID?: string
+  ) => {
+    return new Promise<WsResponse>((resolve, reject) => {
+      const args = {
+        data: userInfo,
+        operationID: operationID || uuid(this.uid as string),
+        reqFuncName: RequestFunc.SETSELFINFO,
+        userID: this.uid,
+      };
+      this.HttpSend(args, url, resolve, reject);
+    });
+  };
+
+  // get User Information
+  getUsersInfo = (url: string, userIDList: string[], operationID?: string) => {
+    return new Promise<WsResponse>((resolve, reject) => {
+      const args = {
+        data: userIDList,
+        operationID: operationID || uuid(this.uid as string),
+        reqFuncName: RequestFunc.GETUSERINFO,
+        userID: this.uid,
+      };
+      this.HttpSend(args, url, resolve, reject);
+    });
+  };
+
+  // getSelfUserInformation
+  getSelfUserInfo = (url: string, operationID?: string) => {
+    return new Promise<WsResponse>((resolve, reject) => {
+      const args = {
+        data: "",
+        operationID: operationID || uuid(this.uid as string),
+        reqFuncName: RequestFunc.GETSELFUSERINFO,
+        userID: "userID",
+      };
+      this.HttpSend(args, url, resolve, reject);
+    });
+  };
+
+  // upLoad User File
+  upLoadUserFile = (
+    url: string,
+    data: upLoadFileParams,
+    operationID?: string
+  ) => {
+    return new Promise<WsResponse>((resolve, reject) => {
+      const args = {
+        data: data,
+        operationID: operationID || uuid(this.uid as string),
+        reqFuncName: RequestFunc.UPLOADFILE,
+        userID: this.uid,
+      };
+      this.HttpSend(args, url, resolve, reject);
+    });
+  };
+
+  //
+
+  httpSend = (url: string, params: WsParams): Promise<WsResponse> => {
+    return new Promise((resolve, reject) => {
+      if (!navigator.onLine) {
+        const errData: WsResponse = {
+          event: params.reqFuncName,
+          errCode: 112,
+          errMsg: "conn eoor",
+          data: "",
+          operationID: params.operationID || "",
+        };
+        reject(errData);
+        return;
+      }
+
+      axios
+        .post(url, params)
+        .then((response) => {
+          if (!response.data) {
+            const errData: WsResponse = {
+              event: params.reqFuncName,
+              errCode: 113,
+              errMsg: "net work error",
+              data: response.data,
+              operationID: params.operationID || "",
+            };
+            reject(errData);
+            return;
+          }
+          response.data
+            .then((res: any) => {
+              const responseData: WsResponse = {
+                event: params.reqFuncName,
+                errCode: 0,
+                errMsg: "",
+                data: res,
+                operationID: params.operationID || "",
+              };
+              resolve(responseData);
+            })
+            .catch((error: any) => {
+              const errData: WsResponse = {
+                event: params.reqFuncName,
+                errCode: 113,
+                errMsg: "net work error",
+                data: error,
+                operationID: params.operationID || "",
+              };
+              reject(errData);
+            });
+        })
+        .catch((error) => {
+          const errData: WsResponse = {
+            event: params.reqFuncName,
+            errCode: 113,
+            errMsg: "net work error",
+            data: error,
+            operationID: params.operationID || "",
+          };
+          reject(errData);
+        });
+    });
+  };
 }

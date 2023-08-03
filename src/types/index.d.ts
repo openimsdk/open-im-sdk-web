@@ -148,7 +148,7 @@ export type QuoteMsgParams = {
 export type AdvancedQuoteMsgParams = {
   text: string;
   message: string;
-  messageEntityList: MessageEntity[]
+  messageEntityList: MessageEntity[];
 };
 
 export type SendMsgParams = {
@@ -232,7 +232,7 @@ export type isRecvParams = {
   opt: OptType;
 };
 
-declare export enum OptType {
+declare enum OptType {
   Nomal = 0,
   Mute = 1,
   WithoutNotify = 2,
@@ -311,7 +311,7 @@ export type SearchGroupMemberParams = {
 export type SetMemberAuthParams = {
   rule: AllowType;
   groupID: string;
-}
+};
 
 export type CreateGroupParams = {
   groupBaseInfo: GroupInitInfo;
@@ -483,7 +483,9 @@ export type FullUserItem = {
   userID: string;
 };
 
-export type PartialUserItem = Partial<Omit<FullUserItem, "userID">> & { userID: string };
+export type PartialUserItem = Partial<Omit<FullUserItem, "userID">> & {
+  userID: string;
+};
 
 export type FriendItem = {
   addSource: number;
@@ -538,24 +540,24 @@ export type GroupItem = {
   lookMemberInfo: AllowType;
 };
 
-declare export enum AllowType {
+declare enum AllowType {
   Allowed,
   NotAllowed,
 }
 
-declare export enum GroupType {
+declare enum GroupType {
   NomalGroup,
   SuperGroup,
   WorkingGroup,
 }
 
-declare export enum GroupVerificationType {
+declare enum GroupVerificationType {
   ApplyNeedInviteNot,
   AllNeed,
   AllNot,
 }
 
-declare export enum GroupStatus {
+declare enum GroupStatus {
   Nomal = 0,
   Baned = 1,
   Dismissed = 2,
@@ -576,13 +578,13 @@ export type GroupMemberItem = {
   ex: string;
 };
 
-declare export enum GroupJoinSource {
+declare enum GroupJoinSource {
   Invitation = 2,
   Search = 3,
   QrCode = 4,
 }
 
-declare export enum GroupRole {
+declare enum GroupRole {
   Nomal = 1,
   Owner = 2,
   Admin = 3,
@@ -609,7 +611,7 @@ export type ConversationItem = {
   ex: string;
 };
 
-declare export enum GroupAtType {
+declare enum GroupAtType {
   AtNormal = 0,
   AtMe = 1,
   AtAll = 2,
@@ -655,13 +657,13 @@ export type MessageItem = {
   downloaded?: boolean;
 };
 
-declare export enum MessageStatus {
+declare enum MessageStatus {
   Sending = 1,
   Succeed = 2,
   Failed = 3,
 }
 
-declare export enum Platform {
+declare enum Platform {
   iOS = 1,
   Android = 2,
   Windows = 3,
@@ -671,7 +673,7 @@ declare export enum Platform {
   Admin = 8,
 }
 
-declare export enum MessageType {
+declare enum MessageType {
   TEXTMESSAGE = 101,
   PICTUREMESSAGE = 102,
   VOICEMESSAGE = 103,
@@ -720,7 +722,7 @@ declare export enum MessageType {
   BURNMESSAGECHANGE = 1701,
 }
 
-declare export enum SessionType {
+declare enum SessionType {
   Single = 1,
   Group = 2,
   SuperGroup = 3,
@@ -918,6 +920,6 @@ export interface DepartmentMemberSearchItem extends DepartmentMemberItem {
 }
 
 export type FindMessageParams = {
-    conversationID: string;
-    clientMsgIDList: string[]
-  }
+  conversationID: string;
+  clientMsgIDList: string[];
+};

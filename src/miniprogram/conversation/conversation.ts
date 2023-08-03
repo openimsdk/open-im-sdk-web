@@ -1,12 +1,4 @@
 import {
-  getConversationListSplitParams,
-  pinConversationParams,
-  setConversationBurnDurationParams,
-  setConversationDraftParams,
-  setConversationPrivateChatParams,
-  setConversationRecvMessageOptParams,
-} from "./params";
-import {
   CbEvents,
   LoginParams,
   RequestFunc,
@@ -19,6 +11,14 @@ import {
 import Emitter from "open-im-sdk/event";
 import { stopWorker } from "../../util";
 import { createWorker } from "open-im-sdk/util";
+import {
+  getConversationListSplitParams,
+  pinConversationParams,
+  setConversationBurnDurationParams,
+  setConversationDraftParams,
+  setConversationPrivateChatParams,
+  setConversationRecvMessageOptParams,
+} from "../../im/params";
 
 export default class OpenIMSDK extends Emitter {
   private ws: WebSocket | undefined;
