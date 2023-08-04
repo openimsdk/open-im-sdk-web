@@ -69,19 +69,27 @@ import {
 import axios from "axios";
 import {
   SelfUserInfoParams,
+  acceptFriendApplicationParams,
   acceptGroupApplicationParams,
   addFriendParams,
   changeGroupToMuteParams,
   dismissGroupParams,
+  getFriendBlackListParams,
+  getFriendListParams,
   getGroupMemberListByJoinTimeFilterParams,
   getGroupMemberListParams,
   getGroupMemberOwnerAndAdminParams,
+  getRecvFriendApplicationListParams,
+  getSendFriendApplicationListParams,
+  getSpecifiedFriendsInfoParams,
   getSpecifiedGroupMembersInfoParams,
   getSpecifiedGroupsInfoParams,
   inviteUserToGroupParams,
   joinGroupParams,
+  judgeFriendParams,
   kickGroupMemberParams,
   pageNationParams,
+  refuseFriendApplicationParams,
   refuseGroupApplicationParams,
   searchFriendParams,
   searchGroupMembersParams,
@@ -1527,7 +1535,7 @@ export default class OpenIMSDK extends Emitter {
   // http tool
   private HttpSend = (
     params: WsParams,
-    url: string,
+    url: string = this.baseUrl,
     resolve: (value: WsResponse | PromiseLike<WsResponse>) => void,
     reject: (reason?: any) => void
   ) => {
@@ -1554,23 +1562,26 @@ export default class OpenIMSDK extends Emitter {
   };
   // Judge a friend
   judgeFriend = (
-    url: string,
-    userID: string,
-    otherUserID: string,
+    url: string = this.baseUrl,
+    data: judgeFriendParams,
     operationID?: string
   ) => {
     return new Promise<WsResponse>((resolve, reject) => {
       const args = {
         reqFuncName: RequestFunc.GETSELFUSERINFO,
         operationID: operationID || uuid(this.uid as string),
-        userID: userID || this.uid,
-        data: { otherUserID },
+        userID: data.userID || this.uid,
+        data: data,
       };
       this.HttpSend(args, url, resolve, reject);
     });
   };
   // add a friend
-  addFriend = (url: string, data: addFriendParams, operationID?: string) => {
+  addFriend = (
+    url: string = this.baseUrl,
+    data: addFriendParams,
+    operationID?: string
+  ) => {
     return new Promise<WsResponse>((resolve, reject) => {
       const args = {
         data: data,
@@ -1582,7 +1593,7 @@ export default class OpenIMSDK extends Emitter {
     });
   };
   // add a Friend to Black
-  addFriendToBlack = (url: string, operationID?: string) => {
+  addFriendToBlack = (url: string = this.baseUrl, operationID?: string) => {
     return new Promise<WsResponse>((resolve, reject) => {
       const args = {
         data: "",
@@ -1595,7 +1606,7 @@ export default class OpenIMSDK extends Emitter {
   };
   // checkFriend whether in or not is other's friend list
   checkFriendExists = (
-    url: string,
+    url: string = this.baseUrl,
     userIDList: string[],
     operationID?: string
   ) => {
@@ -1612,7 +1623,11 @@ export default class OpenIMSDK extends Emitter {
   };
 
   //delete a friend
-  deleteFriend = (url: string, userID: string, operationID?: string) => {
+  deleteFriend = (
+    url: string = this.baseUrl,
+    userID: string,
+    operationID?: string
+  ) => {
     return new Promise<WsResponse>((resolve, reject) => {
       const args = {
         userID: userID || this.uid,
@@ -1626,16 +1641,15 @@ export default class OpenIMSDK extends Emitter {
 
   //get friend black list
   getFriendBlackList = (
-    url: string,
-    userID: string,
-    pageNation: pageNationParams,
+    url: string = this.baseUrl,
+    data: getFriendBlackListParams,
     operationID?: string
   ) => {
     return new Promise<WsResponse>((resolve, reject) => {
       const args = {
-        userID: userID || this.uid,
+        userID: data.userID || this.uid,
         reqFuncName: RequestFunc.GETSPECIFIEDFRIENDINFO,
-        data: pageNation,
+        data: data,
         operationID: operationID || uuid(this.uid as string),
       };
       this.HttpSend(args, url, resolve, reject);
@@ -1644,16 +1658,15 @@ export default class OpenIMSDK extends Emitter {
 
   //get friend list
   getFriendList = (
-    url: string,
-    userID: string,
-    pageNation: pageNationParams,
+    url: string = this.baseUrl,
+    data: getFriendListParams,
     operationID?: string
   ) => {
     return new Promise<WsResponse>((resolve, reject) => {
       const args = {
-        userID: userID || this.uid,
+        userID: data.userID || this.uid,
         reqFuncName: RequestFunc.GETSPECIFIEDFRIENDINFO,
-        data: pageNation,
+        data: data,
         operationID: operationID || uuid(this.uid as string),
       };
       this.HttpSend(args, url, resolve, reject);
@@ -1662,16 +1675,15 @@ export default class OpenIMSDK extends Emitter {
 
   //get Receive Friend Apply List
   getRecvFriendApplicationList = (
-    url: string,
-    userID: string,
-    pageNation: pageNationParams,
+    url: string = this.baseUrl,
+    data: getRecvFriendApplicationListParams,
     operationID?: string
   ) => {
     return new Promise<WsResponse>((resolve, reject) => {
       const args = {
-        userID: userID || this.uid,
+        userID: data.userID || this.uid,
         reqFuncName: RequestFunc.GETSPECIFIEDFRIENDINFO,
-        data: pageNation,
+        data: data,
         operationID: operationID || uuid(this.uid as string),
       };
       this.HttpSend(args, url, resolve, reject);
@@ -1680,16 +1692,15 @@ export default class OpenIMSDK extends Emitter {
 
   //get Send Friend Apply List
   getSendFriendApplicationList = (
-    url: string,
-    userID: string,
-    pageNation: pageNationParams,
+    url: string = this.baseUrl,
+    data: getSendFriendApplicationListParams,
     operationID?: string
   ) => {
     return new Promise<WsResponse>((resolve, reject) => {
       const args = {
-        userID: userID || this.uid,
+        userID: data.userID || this.uid,
         reqFuncName: RequestFunc.GETSPECIFIEDFRIENDINFO,
-        data: pageNation,
+        data: data,
         operationID: operationID || uuid(this.uid as string),
       };
       this.HttpSend(args, url, resolve, reject);
@@ -1698,16 +1709,15 @@ export default class OpenIMSDK extends Emitter {
 
   // get specifically friends information
   getSpecifiedFriendsInfo = (
-    url: string,
-    userID: string,
-    pageNation: pageNationParams,
+    url: string = this.baseUrl,
+    data: getSpecifiedFriendsInfoParams,
     operationID?: string
   ) => {
     return new Promise<WsResponse>((resolve, reject) => {
       const args = {
-        userID: userID || this.uid,
+        userID: data.userID || this.uid,
         reqFuncName: RequestFunc.GETSPECIFIEDFRIENDINFO,
-        data: pageNation,
+        data: data,
         operationID: operationID || uuid(this.uid as string),
       };
       this.HttpSend(args, url, resolve, reject);
@@ -1716,9 +1726,8 @@ export default class OpenIMSDK extends Emitter {
 
   // accept a friend's apply
   acceptFriendApplication = (
-    url: string,
-    toUserID: string,
-    handleMsg: string,
+    url: string = this.baseUrl,
+    data: acceptFriendApplicationParams,
     operationID?: string
   ) => {
     return new Promise<WsResponse>((resolve, reject) => {
@@ -1726,7 +1735,7 @@ export default class OpenIMSDK extends Emitter {
         userID: this.uid,
         operationID: operationID || uuid(this.uid as string),
         reqFuncName: RequestFunc.ACCEPTFRIENDAPPLICATION,
-        data: { handledMsg: handleMsg, toUserID: toUserID },
+        data: { ...data },
       };
       this.HttpSend(args, url, resolve, reject);
     });
@@ -1734,16 +1743,15 @@ export default class OpenIMSDK extends Emitter {
 
   // refuse friend apply
   refuseFriendApplication = (
-    url: string,
-    toUserID: string,
-    handleMsg: string,
+    url: string = this.baseUrl,
+    data: refuseFriendApplicationParams,
     operationID?: string
   ) => {
     return new Promise<WsResponse>((resolve, reject) => {
       const args = {
         operationID: operationID || uuid(this.uid as string),
         reqFuncName: RequestFunc.REFUSEFRIENDAPPLICATION,
-        data: { handledMsg: handleMsg, toUserID: toUserID },
+        data: { ...data },
         userID: this.uid,
       };
       this.HttpSend(args, url, resolve, reject);
@@ -1751,7 +1759,11 @@ export default class OpenIMSDK extends Emitter {
   };
 
   // remove friend from black list
-  removeBlack = (url: string, userID: string, operationID?: string) => {
+  removeBlack = (
+    url: string = this.baseUrl,
+    userID: string,
+    operationID?: string
+  ) => {
     return new Promise<WsResponse>((resolve, reject) => {
       const args = {
         data: "",
@@ -1765,7 +1777,7 @@ export default class OpenIMSDK extends Emitter {
 
   // search friends by specified key word
   searchFriends = (
-    url: string,
+    url: string = this.baseUrl,
     data: searchFriendParams,
     operationID?: string
   ) => {
@@ -1782,7 +1794,7 @@ export default class OpenIMSDK extends Emitter {
 
   // set friend remark
   setFriendRemark = (
-    url: string,
+    url: string = this.baseUrl,
     data: setFriendRemarkParams,
     operationID?: string
   ) => {
@@ -1800,15 +1812,15 @@ export default class OpenIMSDK extends Emitter {
   // TODO @me group
   // accept group application
   acceptGroupApplication = (
-    url: string,
+    url: string = this.baseUrl,
     data: acceptGroupApplicationParams,
-    operationID: string
+    operationID?: string
   ) => {
     return new Promise<WsResponse>((resolve, reject) => {
       const args = {
         data: data,
         reqFuncName: RequestFunc.ACCEPTGROUPAPPLICATION,
-        operationID: operationID,
+        operationID: operationID || uuid(this.uid as string),
         userID: this.uid,
       };
       this.HttpSend(args, url, resolve, reject);
@@ -1817,14 +1829,14 @@ export default class OpenIMSDK extends Emitter {
 
   // change GroupMember to Mute
   changeGroupMemberMute = (
-    url: string,
+    url: string = this.baseUrl,
     data: ChangeGroupMemberMuteParams,
-    operationID: string
+    operationID?: string
   ) => {
     return new Promise<WsResponse>((resolve, reject) => {
       const args = {
         data: data,
-        operationID: operationID,
+        operationID: operationID || uuid(this.uid as string),
         userID: this.uid,
         reqFuncName: RequestFunc.CHANGEGROUPMEMBERMUTE,
       };
@@ -1834,14 +1846,14 @@ export default class OpenIMSDK extends Emitter {
 
   // changeGroup to Mute
   changeGroupToMute = (
-    url: string,
+    url: string = this.baseUrl,
     data: changeGroupToMuteParams,
-    operationID: string
+    operationID?: string
   ) => {
     return new Promise<WsResponse>((resolve, reject) => {
       const args = {
         data: data,
-        operationID: operationID,
+        operationID: operationID || uuid(this.uid as string),
         userID: this.uid,
         reqFuncName: RequestFunc.CHANGEGROUPTOMUTE,
       };
@@ -1851,14 +1863,14 @@ export default class OpenIMSDK extends Emitter {
 
   // create a Group
   createGroup = (
-    url: string,
+    url: string = this.baseUrl,
     data: changeGroupToMuteParams,
-    operationID: string
+    operationID?: string
   ) => {
     return new Promise<WsResponse>((resolve, reject) => {
       const args = {
         data: data,
-        operationID: operationID,
+        operationID: operationID || uuid(this.uid as string),
         userID: this.uid,
         reqFuncName: RequestFunc.CREATEGROUP,
       };
@@ -1868,14 +1880,14 @@ export default class OpenIMSDK extends Emitter {
 
   // dismiss a group
   dismissGroup = (
-    url: string,
+    url: string = this.baseUrl,
     data: dismissGroupParams,
-    operationID: string
+    operationID?: string
   ) => {
     return new Promise<WsResponse>((resolve, reject) => {
       const args = {
         data: data,
-        operationID: operationID,
+        operationID: operationID || uuid(this.uid as string),
         userID: this.uid,
         reqFuncName: RequestFunc.DISMISSGROUP,
       };
@@ -1884,10 +1896,13 @@ export default class OpenIMSDK extends Emitter {
   };
 
   // get Group ApplicationList As Applicant
-  getGroupApplicationListAsApplicant = (url: string, operationID: string) => {
+  getGroupApplicationListAsApplicant = (
+    url: string = this.baseUrl,
+    operationID?: string
+  ) => {
     return new Promise<WsResponse>((resolve, reject) => {
       const args = {
-        operationID: operationID,
+        operationID: operationID || uuid(this.uid as string),
         userID: this.uid,
         reqFuncName: RequestFunc.GETGROUPAPPLICATIONLISTASAPPLICANT,
         data: "",
@@ -1897,10 +1912,13 @@ export default class OpenIMSDK extends Emitter {
   };
 
   // getGroupApplicationList As Recipient
-  getGroupApplicationListAsRecipient = (url: string, operationID: string) => {
+  getGroupApplicationListAsRecipient = (
+    url: string = this.baseUrl,
+    operationID?: string
+  ) => {
     return new Promise<WsResponse>((resolve, reject) => {
       const args = {
-        operationID: operationID,
+        operationID: operationID || uuid(this.uid as string),
         userID: this.uid,
         reqFuncName: RequestFunc.GETGROUPAPPLICATIONLISTASRECIPIENT,
         data: "",
@@ -1911,14 +1929,14 @@ export default class OpenIMSDK extends Emitter {
 
   // getGroupMemberList
   getGroupMemberList = (
-    url: string,
+    url: string = this.baseUrl,
     data: getGroupMemberListParams,
-    operationID: string
+    operationID?: string
   ) => {
     return new Promise<WsResponse>((resolve, reject) => {
       const args = {
         data: data,
-        operationID: operationID,
+        operationID: operationID || uuid(this.uid as string),
         userID: this.uid,
         reqFuncName: RequestFunc.GETGROUPMEMBERLIST,
       };
@@ -1928,14 +1946,14 @@ export default class OpenIMSDK extends Emitter {
 
   // getGroupMemberListByJoinTimeFilter
   getGroupMemberListByJoinTimeFilter = (
-    url: string,
+    url: string = this.baseUrl,
     data: getGroupMemberListByJoinTimeFilterParams,
-    operationID: string
+    operationID?: string
   ) => {
     return new Promise<WsResponse>((resolve, reject) => {
       const args = {
         data: data,
-        operationID: operationID,
+        operationID: operationID || uuid(this.uid as string),
         userID: this.uid,
         reqFuncName: RequestFunc.GETGROUPMEMBERLISTBYJOINTIMEFILTER,
       };
@@ -1945,14 +1963,14 @@ export default class OpenIMSDK extends Emitter {
 
   // getGroupMemberOwnerAndAdmin
   getGroupMemberOwnerAndAdmin = (
-    url: string,
+    url: string = this.baseUrl,
     data: getGroupMemberOwnerAndAdminParams,
-    operationID: string
+    operationID?: string
   ) => {
     return new Promise<WsResponse>((resolve, reject) => {
       const args = {
         data: data,
-        operationID: operationID,
+        operationID: operationID || uuid(this.uid as string),
         userID: this.uid,
         reqFuncName: RequestFunc.GETGROUPMEMBEROWNERANDADMIN,
       };
@@ -1961,10 +1979,10 @@ export default class OpenIMSDK extends Emitter {
   };
 
   // get JoinedGroupList
-  getJoinedGroupList = (url: string, operationID: string) => {
+  getJoinedGroupList = (url: string = this.baseUrl, operationID?: string) => {
     return new Promise<WsResponse>((resolve, reject) => {
       const args = {
-        operationID: operationID,
+        operationID: operationID || uuid(this.uid as string),
         userID: this.uid,
         reqFuncName: RequestFunc.GETJOINEDGROUPLIST,
         data: "",
@@ -1975,14 +1993,14 @@ export default class OpenIMSDK extends Emitter {
 
   // get SpecifiedGroupMembersInfo
   getSpecifiedGroupMembersInfo = (
-    url: string,
+    url: string = this.baseUrl,
     data: getSpecifiedGroupMembersInfoParams,
-    operationID: string
+    operationID?: string
   ) => {
     return new Promise<WsResponse>((resolve, reject) => {
       const args = {
         data: data,
-        operationID: operationID,
+        operationID: operationID || uuid(this.uid as string),
         userID: this.uid,
         reqFuncName: RequestFunc.GETSPECIFIEDGROUPMEMBERSINFO,
       };
@@ -1992,14 +2010,14 @@ export default class OpenIMSDK extends Emitter {
 
   // get SpecifiedGroupsInfo
   getSpecifiedGroupsInfo = (
-    url: string,
+    url: string = this.baseUrl,
     data: getSpecifiedGroupsInfoParams,
-    operationID: string
+    operationID?: string
   ) => {
     return new Promise<WsResponse>((resolve, reject) => {
       const args = {
         data: data,
-        operationID: operationID,
+        operationID: operationID || uuid(this.uid as string),
         userID: this.uid,
         reqFuncName: RequestFunc.GETSPECIFIEDGROUPSINFO,
       };
@@ -2009,14 +2027,14 @@ export default class OpenIMSDK extends Emitter {
 
   // inviteUser To Group
   inviteUserToGroup = (
-    url: string,
+    url: string = this.baseUrl,
     data: inviteUserToGroupParams,
-    operationID: string
+    operationID?: string
   ) => {
     return new Promise<WsResponse>((resolve, reject) => {
       const args = {
         data: data,
-        operationID: operationID,
+        operationID: operationID || uuid(this.uid as string),
         userID: this.uid,
         reqFuncName: RequestFunc.INVITEUSERTOGROUP,
       };
@@ -2025,11 +2043,15 @@ export default class OpenIMSDK extends Emitter {
   };
 
   // joinGroup
-  joinGroup = (url: string, data: joinGroupParams, operationID: string) => {
+  joinGroup = (
+    url: string = this.baseUrl,
+    data: joinGroupParams,
+    operationID?: string
+  ) => {
     return new Promise<WsResponse>((resolve, reject) => {
       const args = {
         data: data,
-        operationID: operationID,
+        operationID: operationID || uuid(this.uid as string),
         userID: this.uid,
         reqFuncName: RequestFunc.JOINGROUP,
       };
@@ -2039,14 +2061,14 @@ export default class OpenIMSDK extends Emitter {
 
   // kick GroupMember
   kickGroupMember = (
-    url: string,
+    url: string = this.baseUrl,
     data: kickGroupMemberParams,
-    operationID: string
+    operationID?: string
   ) => {
     return new Promise<WsResponse>((resolve, reject) => {
       const args = {
         data: data,
-        operationID: operationID,
+        operationID: operationID || uuid(this.uid as string),
         userID: this.uid,
         reqFuncName: RequestFunc.KICKGROUPMEMBER,
       };
@@ -2056,14 +2078,14 @@ export default class OpenIMSDK extends Emitter {
 
   // quitGroup
   quitGroup = (
-    url: string,
+    url: string = this.baseUrl,
     data: kickGroupMemberParams,
-    operationID: string
+    operationID?: string
   ) => {
     return new Promise<WsResponse>((resolve, reject) => {
       const args = {
         data: data,
-        operationID: operationID,
+        operationID: operationID || uuid(this.uid as string),
         userID: this.uid,
         reqFuncName: RequestFunc.QUITGROUP,
       };
@@ -2073,14 +2095,14 @@ export default class OpenIMSDK extends Emitter {
 
   // refuse a  GroupApplication
   refuseGroupApplication = (
-    url: string,
+    url: string = this.baseUrl,
     data: refuseGroupApplicationParams,
-    operationID: string
+    operationID?: string
   ) => {
     return new Promise<WsResponse>((resolve, reject) => {
       const args = {
         data: data,
-        operationID: operationID,
+        operationID: operationID || uuid(this.uid as string),
         userID: this.uid,
         reqFuncName: RequestFunc.REFUSEGROUPAPPLICATION,
       };
@@ -2090,14 +2112,14 @@ export default class OpenIMSDK extends Emitter {
 
   // searchGroupMembers
   searchGroupMembers = (
-    url: string,
+    url: string = this.baseUrl,
     data: searchGroupMembersParams,
-    operationID: string
+    operationID?: string
   ) => {
     return new Promise<WsResponse>((resolve, reject) => {
       const args = {
         data: data,
-        operationID: operationID,
+        operationID: operationID || uuid(this.uid as string),
         userID: this.uid,
         reqFuncName: RequestFunc.SEARCHGROUPMEMBERS,
       };
@@ -2107,14 +2129,14 @@ export default class OpenIMSDK extends Emitter {
 
   // searchGroups
   searchGroups = (
-    url: string,
+    url: string = this.baseUrl,
     data: searchGroupsParams,
-    operationID: string
+    operationID?: string
   ) => {
     return new Promise<WsResponse>((resolve, reject) => {
       const args = {
         data: data,
-        operationID: operationID,
+        operationID: operationID || uuid(this.uid as string),
         userID: this.uid,
         reqFuncName: RequestFunc.SEARCHGROUPS,
       };
@@ -2124,14 +2146,14 @@ export default class OpenIMSDK extends Emitter {
 
   //set GroupApplyMemberFriend
   setGroupApplyMemberFriend = (
-    url: string,
+    url: string = this.baseUrl,
     data: setGroupApplyMemberFriendParams,
-    operationID: string
+    operationID?: string
   ) => {
     return new Promise<WsResponse>((resolve, reject) => {
       const args = {
         data: data,
-        operationID: operationID,
+        operationID: operationID || uuid(this.uid as string),
         userID: this.uid,
         reqFuncName: RequestFunc.SETGROUPAPPLYMEMBERFRIEND,
       };
@@ -2141,14 +2163,14 @@ export default class OpenIMSDK extends Emitter {
 
   // setGroupInfo
   setGroupInfo = (
-    url: string,
+    url: string = this.baseUrl,
     data: setGroupInfoParams,
-    operationID: string
+    operationID?: string
   ) => {
     return new Promise<WsResponse>((resolve, reject) => {
       const args = {
         data: data,
-        operationID: operationID,
+        operationID: operationID || uuid(this.uid as string),
         userID: this.uid,
         reqFuncName: RequestFunc.SETGROUPINFO,
       };
@@ -2158,14 +2180,14 @@ export default class OpenIMSDK extends Emitter {
 
   // setGroupLookMemberInfo
   setGroupLookMemberInfo = (
-    url: string,
+    url: string = this.baseUrl,
     data: setGroupLookMemberInfoParams,
-    operationID: string
+    operationID?: string
   ) => {
     return new Promise<WsResponse>((resolve, reject) => {
       const args = {
         data: data,
-        operationID: operationID,
+        operationID: operationID || uuid(this.uid as string),
         userID: this.uid,
         reqFuncName: RequestFunc.SETGROUPLOOKMEMBERINFO,
       };
@@ -2175,14 +2197,14 @@ export default class OpenIMSDK extends Emitter {
 
   // setGroupMemberInfo
   setGroupMemberInfo = (
-    url: string,
+    url: string = this.baseUrl,
     data: setGroupMemberInfoParams,
-    operationID: string
+    operationID?: string
   ) => {
     return new Promise<WsResponse>((resolve, reject) => {
       const args = {
         data: data,
-        operationID: operationID,
+        operationID: operationID || uuid(this.uid as string),
         userID: this.uid,
         reqFuncName: RequestFunc.GETGROUPMEMBERSINFO,
       };
@@ -2192,14 +2214,14 @@ export default class OpenIMSDK extends Emitter {
 
   // setGroupMemberNickname
   setGroupMemberNickname = (
-    url: string,
+    url: string = this.baseUrl,
     data: setGroupMemberNicknameParams,
-    operationID: string
+    operationID?: string
   ) => {
     return new Promise<WsResponse>((resolve, reject) => {
       const args = {
         data: data,
-        operationID: operationID,
+        operationID: operationID || uuid(this.uid as string),
         userID: this.uid,
         reqFuncName: RequestFunc.SETGROUPMEMBERNICKNAME,
       };
@@ -2209,14 +2231,14 @@ export default class OpenIMSDK extends Emitter {
 
   // setGroupMemberRoleLevel
   setGroupMemberRoleLevel = (
-    url: string,
+    url: string = this.baseUrl,
     data: setGroupMemberRoleLevelParams,
-    operationID: string
+    operationID?: string
   ) => {
     return new Promise<WsResponse>((resolve, reject) => {
       const args = {
         data: data,
-        operationID: operationID,
+        operationID: operationID || uuid(this.uid as string),
         userID: this.uid,
         reqFuncName: RequestFunc.SETGROUPMEMBERROLELEVEL,
       };
@@ -2226,14 +2248,14 @@ export default class OpenIMSDK extends Emitter {
 
   // setGroupVerification
   setGroupVerification = (
-    url: string,
+    url: string = this.baseUrl,
     data: setGroupVerificationParams,
-    operationID: string
+    operationID?: string
   ) => {
     return new Promise<WsResponse>((resolve, reject) => {
       const args = {
         data: data,
-        operationID: operationID,
+        operationID: operationID || uuid(this.uid as string),
         userID: this.uid,
         reqFuncName: RequestFunc.SETGROUPVERIFICATION,
       };
@@ -2243,14 +2265,14 @@ export default class OpenIMSDK extends Emitter {
 
   // transferGroupOwner
   transferGroupOwner = (
-    url: string,
+    url: string = this.baseUrl,
     data: transferGroupOwnerParams,
-    operationID: string
+    operationID?: string
   ) => {
     return new Promise<WsResponse>((resolve, reject) => {
       const args = {
         data: data,
-        operationID: operationID,
+        operationID: operationID || uuid(this.uid as string),
         userID: this.uid,
         reqFuncName: RequestFunc.TRANSFERGROUPOWNER,
       };
@@ -2261,7 +2283,7 @@ export default class OpenIMSDK extends Emitter {
   // TODO add user info
   // set user information
   setSelfInfo = (
-    url: string,
+    url: string = this.baseUrl,
     userInfo: SelfUserInfoParams,
     operationID?: string
   ) => {
@@ -2277,7 +2299,11 @@ export default class OpenIMSDK extends Emitter {
   };
 
   // get User Information
-  getUsersInfo = (url: string, userIDList: string[], operationID?: string) => {
+  getUsersInfo = (
+    url: string = this.baseUrl,
+    userIDList: string[],
+    operationID?: string
+  ) => {
     return new Promise<WsResponse>((resolve, reject) => {
       const args = {
         data: userIDList,
@@ -2290,7 +2316,7 @@ export default class OpenIMSDK extends Emitter {
   };
 
   // getSelfUserInformation
-  getSelfUserInfo = (url: string, operationID?: string) => {
+  getSelfUserInfo = (url: string = this.baseUrl, operationID?: string) => {
     return new Promise<WsResponse>((resolve, reject) => {
       const args = {
         data: "",
@@ -2304,7 +2330,7 @@ export default class OpenIMSDK extends Emitter {
 
   // upLoad User File
   upLoadUserFile = (
-    url: string,
+    url: string = this.baseUrl,
     data: upLoadFileParams,
     operationID?: string
   ) => {
@@ -2319,9 +2345,12 @@ export default class OpenIMSDK extends Emitter {
     });
   };
 
-  //
+  // protocol
 
-  httpSend = (url: string, params: WsParams): Promise<WsResponse> => {
+  httpSend = (
+    url: string = this.baseUrl,
+    params: WsParams
+  ): Promise<WsResponse> => {
     return new Promise((resolve, reject) => {
       if (!navigator.onLine) {
         const errData: WsResponse = {
