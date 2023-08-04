@@ -2255,7 +2255,7 @@ export default class OpenIMSDK extends Emitter {
       }
 
       axios
-        .post(url, params)
+        .post(this.baseUrl, params)
         .then((response) => {
           if (!response.data) {
             const errData: WsResponse = {
