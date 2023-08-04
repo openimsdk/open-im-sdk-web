@@ -105,6 +105,7 @@ import {
   transferGroupOwnerParams,
   upLoadFileParams,
 } from "./params";
+import { instance } from "../util/httpAdapter";
 
 export default class OpenIMSDK extends Emitter {
   private ws: WebSocket | undefined;
@@ -2254,7 +2255,7 @@ export default class OpenIMSDK extends Emitter {
         return;
       }
 
-      axios
+      instance
         .post(this.baseUrl, params)
         .then((response) => {
           if (!response.data) {
