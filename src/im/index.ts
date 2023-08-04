@@ -125,8 +125,9 @@ export default class OpenIMSDK extends Emitter {
   private worker: Worker | null = null;
   private baseUrl: string = "";
 
-  constructor() {
+  constructor(url: string) {
     super();
+    this.baseUrl = url;
     this.getPlatform();
   }
 
@@ -1368,7 +1369,7 @@ export default class OpenIMSDK extends Emitter {
       let errData: WsResponse = {
         event: params.reqFuncName,
         errCode: 112,
-        errMsg: "no ws conect...",
+        errMsg: "no ws connect...",
         data: "",
         operationID: params.operationID || "",
       };
