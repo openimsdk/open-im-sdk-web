@@ -1,5 +1,7 @@
 import type { WsRequest, WsResponse } from '@/types/entity';
 
+type AppPlatform = 'unknow' | 'web' | 'uni' | 'wx';
+
 class WebSocketManager {
   private ws?: WebSocket;
   private url: string;
@@ -7,6 +9,7 @@ class WebSocketManager {
   private maxReconnectAttempts: number;
   private reconnectAttempts: number;
   private shouldReconnect: boolean;
+  private platformNamespace: AppPlatform;
 
   constructor(
     url: string,
@@ -20,23 +23,54 @@ class WebSocketManager {
     this.maxReconnectAttempts = maxReconnectAttempts;
     this.reconnectAttempts = 0;
     this.shouldReconnect = true;
+    this.platformNamespace = this.checkPlatform();
   }
 
+  private checkPlatform = () => {
+    if (typeof WebSocket) {
+      return 'web';
+    }
+    // @ts-ignore
+    if (typeof uni) {
+      return 'uni';
+    }
+    // @ts-ignore
+    if (typeof wx) {
+      return 'wx';
+    }
+    return 'unknow';
+  };
+
   public connect = (): Promise<void> => {
+    if (this.platformNamespace === 'unknow') {
+      return Promise.reject(new Error('WebSocket is not supported'));
+    }
     return new Promise((resolve, reject) => {
       if (!this.ws || this.ws.readyState === WebSocket.CLOSED) {
-        this.ws = new WebSocket(this.url);
-
-        this.ws.onopen = () => {
+        const onWsOpen = () => {
           if (this.reconnectAttempts) {
             this.onReconnectSuccess();
           }
           this.reconnectAttempts = 0;
           resolve();
         };
-        this.ws.onerror = event => {
-          reject(event);
-        };
+        const onWsError = (event: Event) => reject(event);
+
+        if (this.platformNamespace === 'web') {
+          this.ws = new WebSocket(this.url);
+          this.ws.onopen = onWsOpen;
+          this.ws.onerror = onWsError;
+        } else {
+          // @ts-ignore
+          this.ws = this.platformNamespace.connectSocket({
+            url: this.url,
+            complete: () => {},
+          });
+          // @ts-ignore
+          this.ws.onOpen(onWsOpen);
+          // @ts-ignore
+          this.ws.onError(onWsError);
+        }
 
         this.setupEventListeners();
       } else if (this.ws.readyState === WebSocket.OPEN) {
@@ -50,15 +84,9 @@ class WebSocketManager {
   private setupEventListeners = () => {
     if (!this.ws) return;
 
-    this.ws.onmessage = event => {
-      if (this.isHeartbeat(event.data)) {
-        this.onHeartbeat();
-      } else {
-        this.onBinaryMessage(event.data);
-      }
-    };
-
-    this.ws.onclose = event => {
+    const onWsMessage = (event: MessageEvent<ArrayBuffer>) =>
+      this.onBinaryMessage(event.data);
+    const onWsClose = (event: CloseEvent) => {
       if (
         this.shouldReconnect &&
         this.reconnectAttempts < this.maxReconnectAttempts
@@ -67,15 +95,15 @@ class WebSocketManager {
         this.reconnectAttempts++;
       }
     };
-  };
 
-  private isHeartbeat = (data: unknown): boolean => {
-    return data === 'ping';
-  };
-
-  private onHeartbeat = () => {
-    if (this.ws?.readyState === WebSocket.OPEN) {
-      this.ws.send('pong');
+    if (this.platformNamespace === 'web') {
+      this.ws.onmessage = onWsMessage;
+      this.ws.onclose = onWsClose;
+    } else {
+      // @ts-ignore
+      this.ws.onMessage(onWsMessage);
+      // @ts-ignore
+      this.ws.onClose(onWsClose);
     }
   };
 
@@ -86,7 +114,6 @@ class WebSocketManager {
     const decoder = new TextDecoder();
     const message = decoder.decode(data);
     const json: WsResponse = JSON.parse(message);
-    console.log('Received JSON message from server:', json);
     this.onMessage(json);
   };
 

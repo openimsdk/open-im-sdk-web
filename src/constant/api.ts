@@ -1,4 +1,5 @@
 export enum ErrorCode {
+  ConnectionEstablishmentFailed = 10000,
   ResourceLoadNotCompleteError = 10004,
   UnknownError = 10005,
   LoginRepeatError = 10102,

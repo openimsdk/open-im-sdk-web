@@ -169,7 +169,17 @@ class OpenIMSDK
       this.handleMessage,
       this.handleReconnectSuccess
     );
-    await this.wsManager.connect();
+    try {
+      await this.wsManager.connect();
+    } catch (error) {
+      return Promise.reject({
+        data: '',
+        operationID,
+        errMsg: (error as Error).message,
+        errCode: ErrorCode.ConnectionEstablishmentFailed,
+        event: RequestApi.Login,
+      });
+    }
     return this.sendRequest({
       data: JSON.stringify([params.userID, params.token]),
       operationID,
