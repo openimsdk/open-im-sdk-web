@@ -1,14 +1,3 @@
-import emitter from './event';
-import OpenIMSDK from './im';
-import { RequestFunc,CbEvents } from './constants'
-import { uuid } from './util'
+import OpenIMSDK from './api';
 
-
-
-export {
-    OpenIMSDK,
-    RequestFunc,
-    emitter,
-    CbEvents,
-    uuid
-}
+export { OpenIMSDK };
