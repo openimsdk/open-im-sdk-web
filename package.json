@@ -6,6 +6,7 @@
   "main": "lib/index.js",
   "unpkg": "lib/index.umd.js",
   "module": "lib/index.es.js",
+  "jsdelivr": "lib/index.umd.js",
   "types": "lib/index.d.ts",
   "exports": {
     ".": {
