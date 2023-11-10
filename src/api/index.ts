@@ -1,4 +1,3 @@
-import { v4 as uuidV4 } from 'uuid';
 import type {
   MessageItem,
   PromiseMap,
@@ -30,6 +29,13 @@ import {
   getUploadUrl,
 } from '@/utils/upload';
 import { LoginStatus } from '@/types/enum';
+import { uuid } from '@/utils/uuid';
+
+const forceCloseEvents = [
+  RequestApi.Logout,
+  CbEvents.OnKickedOffline,
+  CbEvents.OnUserTokenExpired,
+];
 
 function isEventInCallbackEvents(event: string): event is CbEvents {
   return Object.values(CbEvents).includes(event as CbEvents);
@@ -86,7 +92,7 @@ class OpenIMSDK
     reqFuncName: RequestApi,
     dataFormatter = this.defaultDataFormatter<T>
   ) => {
-    return (params: T, operationID = uuidV4()) => {
+    return (params: T, operationID = uuid()) => {
       const data = dataFormatter(params as T);
       return this.sendRequest<R>({
         data,
@@ -100,7 +106,7 @@ class OpenIMSDK
   createRequestFunctionWithoutParams = <T = unknown>(
     reqFuncName: RequestApi
   ) => {
-    return (operationID = uuidV4()) =>
+    return (operationID = uuid()) =>
       this.sendRequest<T>({
         data: '[]',
         operationID,
@@ -119,6 +125,12 @@ class OpenIMSDK
       data.data = JSON.parse(data.data as string);
     } catch (error) {}
 
+    if (forceCloseEvents.includes(data.event)) {
+      this.wsManager?.close();
+      this.wsManager = undefined;
+      this.requestMap.clear();
+    }
+
     if (isEventInCallbackEvents(data.event)) {
       this.emit(data.event, data);
       return;
@@ -129,10 +141,6 @@ class OpenIMSDK
         data.errCode === 0 ? promiseHandlers.resolve : promiseHandlers.reject;
       promiseHandler(data);
       this.requestMap.delete(data.operationID);
-      if (data.event === RequestApi.Logout) {
-        this.wsManager?.close();
-        this.wsManager = undefined;
-      }
     }
   };
 
@@ -141,7 +149,7 @@ class OpenIMSDK
 
     this.sendRequest({
       data: JSON.stringify([this.userID, this.token]),
-      operationID: uuidV4(),
+      operationID: uuid(),
       userID: this.userID,
       reqFuncName: RequestApi.Login,
     });
@@ -149,7 +157,7 @@ class OpenIMSDK
 
   login = async (
     params: LoginParams,
-    operationID = uuidV4()
+    operationID = uuid()
   ): Promise<WsResponse> => {
     if (this.wsManager) {
       return Promise.resolve({
@@ -339,7 +347,7 @@ class OpenIMSDK
 
   uploadFile = async (
     { file }: UploadFileParams,
-    operationID = uuidV4()
+    operationID = uuid()
   ): Promise<WsResponse<{ url: string }>> => {
     const { url = '', error } = await this.internalUploadFile(
       file,
@@ -359,7 +367,7 @@ class OpenIMSDK
   // extends message
   createImageMessageByFile = async (
     params: ImageMsgParams & { file: File },
-    operationID = uuidV4()
+    operationID = uuid()
   ) => {
     const { url, error } = await this.internalUploadFile(
       params.file,
@@ -387,7 +395,7 @@ class OpenIMSDK
 
   createVideoMessageByFile = async (
     params: VideoMsgParams & { videoFile: File; snapshotFile: File },
-    operationID = uuidV4()
+    operationID = uuid()
   ) => {
     try {
       const [{ url: snapshotUrl }, { url: videoUrl }] = await Promise.all([
@@ -417,7 +425,7 @@ class OpenIMSDK
 
   createSoundMessageByFile = async (
     params: SoundMsgParams & { file: File },
-    operationID = uuidV4()
+    operationID = uuid()
   ) => {
     const { url, error } = await this.internalUploadFile(
       params.file,
@@ -443,7 +451,7 @@ class OpenIMSDK
 
   createFileMessageByFile = async (
     params: FileMsgParams & { file: File },
-    operationID = uuidV4()
+    operationID = uuid()
   ) => {
     const { url, error } = await this.internalUploadFile(
       params.file,

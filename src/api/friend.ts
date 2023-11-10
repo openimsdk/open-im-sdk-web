@@ -5,13 +5,13 @@ import type {
 } from '@/types/params';
 import OpenIMSDK from '.';
 import { RequestApi } from '@/constant/api';
-import {
-  FriendUserItem,
-  type BlackUserItem,
-  type FriendApplicationItem,
-  type FriendshipInfo,
-  type WsResponse,
+import type {
+  BlackUserItem,
+  FriendApplicationItem,
+  FriendshipInfo,
+  WsResponse,
   SearchedFriendsInfo,
+  FullUserItem,
 } from '@/types/entity';
 
 export function setupFriend(openIMSDK: OpenIMSDK) {
@@ -39,12 +39,12 @@ export function setupFriend(openIMSDK: OpenIMSDK) {
       openIMSDK.createRequestFunctionWithoutParams<FriendApplicationItem[]>(
         RequestApi.GetFriendApplicationListAsRecipient
       ),
-    getFriendList: openIMSDK.createRequestFunctionWithoutParams<
-      FriendUserItem[]
-    >(RequestApi.GetFriendList),
+    getFriendList: openIMSDK.createRequestFunctionWithoutParams<FullUserItem[]>(
+      RequestApi.GetFriendList
+    ),
     getSpecifiedFriendsInfo: openIMSDK.createRequestFunction<
       string[],
-      FriendUserItem[]
+      FullUserItem[]
     >(RequestApi.GetSpecifiedFriendsInfo),
     refuseFriendApplication:
       openIMSDK.createRequestFunction<AccessFriendParams>(
@@ -91,13 +91,11 @@ export interface FriendApi {
   getFriendApplicationListAsRecipient: (
     operationID?: string
   ) => Promise<WsResponse<FriendApplicationItem[]>>;
-  getFriendList: (
-    operationID?: string
-  ) => Promise<WsResponse<FriendUserItem[]>>;
+  getFriendList: (operationID?: string) => Promise<WsResponse<FullUserItem[]>>;
   getSpecifiedFriendsInfo: (
     params: string[],
     operationID?: string
-  ) => Promise<WsResponse<FriendUserItem[]>>;
+  ) => Promise<WsResponse<FullUserItem[]>>;
   refuseFriendApplication: (
     params: AccessFriendParams,
     operationID?: string

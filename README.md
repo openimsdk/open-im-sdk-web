@@ -2,7 +2,7 @@
 
 Use this SDK to add instant messaging capabilities to your application. By connecting to a self-hosted [OpenIM](https://www.openim.io/) server, you can quickly integrate instant messaging capabilities into your app with just a few lines of code.
 
-`open-im-sdk-web` is a pure javascript library. It doesn't store any information inside browser, instead it connects to [oimws](https://github.com/openim-sigs/oimws) the proxy layer. This proxy layer is [OpenIM SDK Core](https://github.com/openimsdk/openim-sdk-core.git)'s websocket proxy(listening on port `10003` by deafult). open-im-sdk-web and open-im-sdk-web-wasm's interfaces are completely the same. Without modifying any code, your website can run in mini-app.
+`open-im-sdk` is a pure javascript library. It doesn't store any information inside browser, instead it connects to [oimws](https://github.com/openim-sigs/oimws) the proxy layer. This proxy layer is [OpenIM SDK Core](https://github.com/openimsdk/openim-sdk-core.git)'s websocket proxy(listening on port `10003` by deafult). open-im-sdk and open-im-sdk-wasm's interfaces are completely the same. Without modifying any code, your website can run in mini-app.
 
 ## Documentation 📚
 
@@ -15,7 +15,7 @@ For the SDK reference, see [https://docs.openim.io/sdks/quickstart/browser](http
 ### Adding Dependencies
 
 ```shell
-npm install open-im-sdk-web --save
+npm install open-im-sdk --save
 ```
 
 ## Usage 🚀
@@ -25,18 +25,18 @@ The following examples demonstrate how to use the SDK. TypeScript is used, provi
 ### Importing the SDK
 
 ```typescript
-import { OpenIMSDK } from 'open-im-sdk-web';
+import { OpenIMSDK } from 'open-im-sdk';
 
 const OpenIM = new OpenIMSDK();
 ```
 
 ### Logging In and Listening for Connection Status
 
-> Note: You need to [deploy](https://github.com/openimsdk/open-im-server#rocket-quick-start) OpenIM Server first, the default port of OpenIM Server is 10001, 10002.
+> Note: You need to [deploy](https://github.com/openimsdk/open-im-server#rocket-quick-start) OpenIM Server first, the default port of OpenIM Server is 10001, 10002, 10003.
 
 ```typescript
-import { CbEvents } from 'open-im-sdk-web';
-import type { WsResponse } from 'open-im-sdk-web';
+import { CbEvents } from 'open-im-sdk';
+import type { WsResponse } from 'open-im-sdk';
 
 OpenIM.on(CbEvents.OnConnecting, handleConnecting);
 OpenIM.on(CbEvents.OnConnectFailed, handleConnectFailed);
@@ -46,7 +46,7 @@ OpenIM.login({
   userID: 'IM user ID',
   token: 'IM user token',
   platformID: 5,
-  wsAddr: 'ws://your-server-ip:10001',
+  wsAddr: 'ws://your-server-ip:10003',
   apiAddr: 'http://your-server-ip:10002',
 });
 
@@ -71,8 +71,8 @@ To log into the IM server, you need to create an account and obtain a user ID an
 OpenIM makes it easy to send and receive messages. By default, there is no restriction on having a friend relationship to send messages (although you can configure other policies on the server). If you know the user ID of the recipient, you can conveniently send a message to them.
 
 ```typescript
-import { CbEvents } from 'open-im-sdk-web';
-import type { WsResponse, MessageItem } from 'open-im-sdk-web';
+import { CbEvents } from 'open-im-sdk';
+import type { WsResponse, MessageItem } from 'open-im-sdk';
 
 // Listenfor new messages 📩
 OpenIM.on(CbEvents.OnRecvNewMessages, handleNewMessages);

@@ -1,6 +1,14 @@
 import type { WsRequest, WsResponse } from '@/types/entity';
+import { utf8Decode, utf8Encode } from './textCoder';
 
 type AppPlatform = 'unknow' | 'web' | 'uni' | 'wx';
+
+enum WsOpenState {
+  CONNECTING = 0,
+  OPEN = 1,
+  CLOSING = 2,
+  CLOSED = 3,
+}
 
 class WebSocketManager {
   private ws?: WebSocket;
@@ -27,15 +35,15 @@ class WebSocketManager {
   }
 
   private checkPlatform = () => {
-    if (typeof WebSocket) {
+    if (typeof WebSocket !== 'undefined') {
       return 'web';
     }
     // @ts-ignore
-    if (typeof uni) {
+    if (typeof uni !== 'undefined') {
       return 'uni';
     }
     // @ts-ignore
-    if (typeof wx) {
+    if (typeof wx !== 'undefined') {
       return 'wx';
     }
     return 'unknow';
@@ -46,7 +54,7 @@ class WebSocketManager {
       return Promise.reject(new Error('WebSocket is not supported'));
     }
     return new Promise((resolve, reject) => {
-      if (!this.ws || this.ws.readyState === WebSocket.CLOSED) {
+      if (!this.ws || this.ws.readyState === WsOpenState.CLOSED) {
         const onWsOpen = () => {
           if (this.reconnectAttempts) {
             this.onReconnectSuccess();
@@ -55,17 +63,23 @@ class WebSocketManager {
           resolve();
         };
         const onWsError = (event: Event) => reject(event);
-
         if (this.platformNamespace === 'web') {
           this.ws = new WebSocket(this.url);
           this.ws.onopen = onWsOpen;
           this.ws.onerror = onWsError;
         } else {
-          // @ts-ignore
-          this.ws = this.platformNamespace.connectSocket({
+          const connectOptions = {
             url: this.url,
             complete: () => {},
-          });
+          };
+          if (this.platformNamespace === 'uni') {
+            // @ts-ignore
+            this.ws = uni.connectSocket(connectOptions);
+          }
+          if (this.platformNamespace === 'wx') {
+            // @ts-ignore
+            this.ws = wx.connectSocket(connectOptions);
+          }
           // @ts-ignore
           this.ws.onOpen(onWsOpen);
           // @ts-ignore
@@ -73,7 +87,7 @@ class WebSocketManager {
         }
 
         this.setupEventListeners();
-      } else if (this.ws.readyState === WebSocket.OPEN) {
+      } else if (this.ws.readyState === this.ws.OPEN) {
         resolve();
       } else {
         reject(new Error('WebSocket is in an unknown state'));
@@ -108,25 +122,42 @@ class WebSocketManager {
   };
 
   private onBinaryMessage = async (data: ArrayBuffer) => {
-    if (data instanceof Blob) {
+    if (this.platformNamespace === 'web' && data instanceof Blob) {
       data = await data.arrayBuffer();
     }
-    const decoder = new TextDecoder();
-    const message = decoder.decode(data);
+    const message = utf8Decode(data);
     const json: WsResponse = JSON.parse(message);
     this.onMessage(json);
   };
 
   private encodeMessage = (messageObject: WsRequest): ArrayBuffer => {
     const messageString = JSON.stringify(messageObject);
-    const encoder = new TextEncoder();
-    const encoded = encoder.encode(messageString);
-    return encoded.buffer;
+    return utf8Encode(messageString);
   };
 
   public sendMessage = (message: WsRequest) => {
-    if (this.ws?.readyState === WebSocket.OPEN) {
-      this.ws.send(this.encodeMessage(message));
+    if (this.ws?.readyState === WsOpenState.OPEN) {
+      if (this.platformNamespace === 'web') {
+        this.ws.send(this.encodeMessage(message));
+      } else {
+        this.ws.send({
+          //@ts-ignore
+          data: this.encodeMessage(message),
+          success: () => {
+            //@ts-ignore
+            if (
+              this.platformNamespace === 'uni' &&
+              //@ts-ignore
+              this.ws!._callbacks !== undefined &&
+              //@ts-ignore
+              this.ws!._callbacks.message !== undefined
+            ) {
+              //@ts-ignore
+              this.ws!._callbacks.message = [];
+            }
+          },
+        });
+      }
     } else {
       console.error('WebSocket is not open. Message not sent.');
     }
@@ -134,7 +165,7 @@ class WebSocketManager {
 
   public close = () => {
     this.shouldReconnect = false;
-    if (this.ws?.readyState === WebSocket.OPEN) {
+    if (this.ws?.readyState === WsOpenState.OPEN) {
       this.ws.close();
     }
   };

@@ -16,6 +16,7 @@ import type {
   Relationship,
   SessionType,
 } from './enum';
+import { CbEvents } from '..';
 
 export interface WsRequest {
   reqFuncName: RequestApi;
@@ -25,7 +26,7 @@ export interface WsRequest {
 }
 
 export interface WsResponse<T = unknown> {
-  event: RequestApi;
+  event: RequestApi | CbEvents;
   errCode: number;
   errMsg: string;
   data: T;
