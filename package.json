@@ -1,6 +1,6 @@
 {
   "name": "open-im-sdk",
-  "version": "3.4.0",
+  "version": "3.4.1",
   "description": "OpenIM SDK for MiniProgram",
   "source": "src/index.ts",
   "main": "lib/index.js",
@@ -21,6 +21,10 @@
     "format": "prettier --write .",
     "release": "semantic-release"
   },
+  "files": [
+    "lib/**/*",
+    "src/**/*"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/openimsdk/open-im-sdk.git"

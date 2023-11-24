@@ -17,6 +17,7 @@ class WebSocketManager {
   private maxReconnectAttempts: number;
   private reconnectAttempts: number;
   private shouldReconnect: boolean;
+  private isProcessingMessage: boolean = false;
   private platformNamespace: AppPlatform;
 
   constructor(
@@ -100,11 +101,15 @@ class WebSocketManager {
 
     const onWsMessage = (event: MessageEvent<ArrayBuffer>) =>
       this.onBinaryMessage(event.data);
-    const onWsClose = (event: CloseEvent) => {
+    const onWsClose = (event?: CloseEvent) => {
       if (
         this.shouldReconnect &&
         this.reconnectAttempts < this.maxReconnectAttempts
       ) {
+        if (this.isProcessingMessage) {
+          setTimeout(() => onWsClose(), 100);
+          return;
+        }
         setTimeout(() => this.connect(), this.reconnectInterval);
         this.reconnectAttempts++;
       }
@@ -122,12 +127,14 @@ class WebSocketManager {
   };
 
   private onBinaryMessage = async (data: ArrayBuffer) => {
+    this.isProcessingMessage = true;
     if (this.platformNamespace === 'web' && data instanceof Blob) {
       data = await data.arrayBuffer();
     }
     const message = utf8Decode(data);
     const json: WsResponse = JSON.parse(message);
     this.onMessage(json);
+    this.isProcessingMessage = false;
   };
 
   private encodeMessage = (messageObject: WsRequest): ArrayBuffer => {

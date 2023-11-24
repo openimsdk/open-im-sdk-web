@@ -128,11 +128,13 @@ class OpenIMSDK
     if (forceCloseEvents.includes(data.event)) {
       this.wsManager?.close();
       this.wsManager = undefined;
-      this.requestMap.clear();
     }
 
     if (isEventInCallbackEvents(data.event)) {
       this.emit(data.event, data);
+      if (forceCloseEvents.includes(data.event)) {
+        this.requestMap.clear();
+      }
       return;
     }
     const promiseHandlers = this.requestMap.get(data.operationID);
@@ -141,6 +143,9 @@ class OpenIMSDK
         data.errCode === 0 ? promiseHandlers.resolve : promiseHandlers.reject;
       promiseHandler(data);
       this.requestMap.delete(data.operationID);
+    }
+    if (forceCloseEvents.includes(data.event)) {
+      this.requestMap.clear();
     }
   };
 
