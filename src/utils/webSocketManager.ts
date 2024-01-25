@@ -1,5 +1,6 @@
 import type { WsRequest, WsResponse } from '@/types/entity';
 import { utf8Decode, utf8Encode } from './textCoder';
+import { RequestApi } from '@/constant/api';
 
 type AppPlatform = 'unknow' | 'web' | 'uni' | 'wx';
 
@@ -31,7 +32,7 @@ class WebSocketManager {
     this.reconnectInterval = reconnectInterval;
     this.maxReconnectAttempts = maxReconnectAttempts;
     this.reconnectAttempts = 0;
-    this.shouldReconnect = true;
+    this.shouldReconnect = false;
     this.platformNamespace = this.checkPlatform();
   }
 
@@ -134,6 +135,9 @@ class WebSocketManager {
     const message = utf8Decode(data);
     const json: WsResponse = JSON.parse(message);
     this.onMessage(json);
+    if (json.event === RequestApi.Login && json.errCode === 0) {
+      this.shouldReconnect = true;
+    }
     this.isProcessingMessage = false;
   };
 
@@ -150,19 +154,6 @@ class WebSocketManager {
         this.ws.send({
           //@ts-ignore
           data: this.encodeMessage(message),
-          success: () => {
-            //@ts-ignore
-            if (
-              this.platformNamespace === 'uni' &&
-              //@ts-ignore
-              this.ws!._callbacks !== undefined &&
-              //@ts-ignore
-              this.ws!._callbacks.message !== undefined
-            ) {
-              //@ts-ignore
-              this.ws!._callbacks.message = [];
-            }
-          },
         });
       }
     } else {

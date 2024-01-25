@@ -25,6 +25,7 @@ import type {
   AdvancedGetMessageResult,
   CardElem,
   MessageItem,
+  SearchMessageResult,
   WsResponse,
 } from '@/types/entity';
 
@@ -169,7 +170,7 @@ export function setupMessage(openIMSDK: OpenIMSDK) {
     ),
     searchLocalMessages: openIMSDK.createRequestFunction<
       SearchLocalParams,
-      MessageItem[]
+      SearchMessageResult
     >(RequestApi.SearchLocalMessages),
     getAdvancedHistoryMessageList: openIMSDK.createRequestFunction<
       GetAdvancedHistoryMsgParams,
@@ -295,7 +296,7 @@ export interface MessageApi {
   searchLocalMessages: (
     params: SearchLocalParams,
     operationID?: string
-  ) => Promise<WsResponse<MessageItem[]>>;
+  ) => Promise<WsResponse<SearchMessageResult>>;
   getAdvancedHistoryMessageList: (
     params: GetAdvancedHistoryMsgParams,
     operationID?: string
