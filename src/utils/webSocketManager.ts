@@ -100,7 +100,7 @@ class WebSocketManager {
   private setupEventListeners = () => {
     if (!this.ws) return;
 
-    const onWsMessage = (event: MessageEvent<ArrayBuffer>) =>
+    const onWsMessage = (event: MessageEvent<string>) =>
       this.onBinaryMessage(event.data);
     const onWsClose = (event?: CloseEvent) => {
       if (
@@ -127,12 +127,12 @@ class WebSocketManager {
     }
   };
 
-  private onBinaryMessage = async (data: ArrayBuffer) => {
+  private onBinaryMessage = async (message: string) => {
     this.isProcessingMessage = true;
-    if (this.platformNamespace === 'web' && data instanceof Blob) {
-      data = await data.arrayBuffer();
-    }
-    const message = utf8Decode(data);
+    // if (this.platformNamespace === 'web' && data instanceof Blob) {
+    //   data = await data.arrayBuffer();
+    // }
+    // const message = utf8Decode(data);
     const json: WsResponse = JSON.parse(message);
     this.onMessage(json);
     if (json.event === RequestApi.Login && json.errCode === 0) {
@@ -149,11 +149,11 @@ class WebSocketManager {
   public sendMessage = (message: WsRequest) => {
     if (this.ws?.readyState === WsOpenState.OPEN) {
       if (this.platformNamespace === 'web') {
-        this.ws.send(this.encodeMessage(message));
+        this.ws.send(JSON.stringify(message));
       } else {
         this.ws.send({
           //@ts-ignore
-          data: this.encodeMessage(message),
+          data: JSON.stringify(message),
         });
       }
     } else {
