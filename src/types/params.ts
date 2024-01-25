@@ -69,6 +69,11 @@ export type AccessFriendParams = {
   handleMsg: string;
 };
 
+export type AddBlackParams = {
+  toUserID: string;
+  ex?: string;
+};
+
 export type SearchFriendParams = {
   keywordList: string[];
   isSearchUserID: boolean;
@@ -92,6 +97,7 @@ export type JoinGroupParams = {
   groupID: string;
   reqMsg: string;
   joinSource: GroupJoinSource;
+  ex?: string;
 };
 
 export type OpreateGroupParams = {

@@ -30,7 +30,13 @@ export function setupGroup(openIMSDK: OpenIMSDK) {
     ),
     joinGroup: openIMSDK.createRequestFunction<JoinGroupParams>(
       RequestApi.JoinGroup,
-      data => JSON.stringify([data.groupID, data.reqMsg, data.joinSource])
+      data =>
+        JSON.stringify([
+          data.groupID,
+          data.reqMsg,
+          data.joinSource,
+          data.ex ?? '',
+        ])
     ),
     inviteUserToGroup: openIMSDK.createRequestFunction<OpreateGroupParams>(
       RequestApi.InviteUserToGroup,

@@ -1,5 +1,6 @@
 import type {
   AccessFriendParams,
+  AddBlackParams,
   RemarkFriendParams,
   SearchFriendParams,
 } from '@/types/params';
@@ -20,7 +21,10 @@ export function setupFriend(openIMSDK: OpenIMSDK) {
       openIMSDK.createRequestFunction<AccessFriendParams>(
         RequestApi.AcceptFriendApplication
       ),
-    addBlack: openIMSDK.createRequestFunction<string>(RequestApi.AddBlack),
+    addBlack: openIMSDK.createRequestFunction<AddBlackParams>(
+      RequestApi.AddBlack,
+      data => JSON.stringify([data.toUserID, data.ex ?? ''])
+    ),
     addFriend: openIMSDK.createRequestFunction<string>(RequestApi.AddFriend),
     checkFriend: openIMSDK.createRequestFunction<string[], FriendshipInfo[]>(
       RequestApi.CheckFriend
@@ -69,7 +73,7 @@ export interface FriendApi {
     operationID?: string
   ) => Promise<WsResponse<unknown>>;
   addBlack: (
-    params: string,
+    params: AddBlackParams,
     operationID?: string
   ) => Promise<WsResponse<unknown>>;
   addFriend: (
