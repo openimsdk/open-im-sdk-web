@@ -256,6 +256,7 @@ export type SendMsgParams = {
   groupID: string;
   offlinePushInfo?: OfflinePush;
   message: MessageItem;
+  isOnlineonly?: boolean;
 };
 
 export type TypingUpdateParams = {

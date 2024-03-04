@@ -124,6 +124,7 @@ export function setupMessage(openIMSDK: OpenIMSDK) {
           data.recvID,
           data.groupID,
           JSON.stringify(offlinePushInfo),
+          data.isOnlineonly ?? false,
         ]);
       }
     ),
@@ -143,6 +144,7 @@ export function setupMessage(openIMSDK: OpenIMSDK) {
         data.recvID,
         data.groupID,
         JSON.stringify(offlinePushInfo),
+        data.isOnlineonly ?? false,
       ]);
     }),
     typingStatusUpdate: openIMSDK.createRequestFunction<TypingUpdateParams>(

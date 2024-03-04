@@ -364,7 +364,7 @@ class OpenIMSDK
       },
       operationID,
       errMsg: error?.message ?? '',
-      errCode: ErrorCode.UnknownError,
+      errCode: error ? ErrorCode.UnknownError : 0,
       event: RequestApi.UploadFile,
     };
   };
