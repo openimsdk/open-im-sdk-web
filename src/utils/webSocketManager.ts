@@ -53,6 +53,7 @@ class WebSocketManager {
   };
 
   public connect = (): Promise<void> => {
+    console.debug("============ webSocketManager connect ", new Date().getTime())
     if (this.platformNamespace === 'unknow') {
       return Promise.reject(new Error('WebSocket is not supported'));
     }
