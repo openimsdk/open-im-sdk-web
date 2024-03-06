@@ -1,6 +1,7 @@
 import type { WsRequest, WsResponse } from '@/types/entity';
 import { utf8Decode, utf8Encode } from './textCoder';
 import { RequestApi } from '@/constant/api';
+import { CbEvents } from '@/constant/callback';
 
 type AppPlatform = 'unknow' | 'web' | 'uni' | 'wx';
 
@@ -111,8 +112,18 @@ class WebSocketManager {
           setTimeout(() => onWsClose(), 100);
           return;
         }
-        setTimeout(() => this.connect(), this.reconnectInterval);
+        setTimeout(() => this.connect().catch(() => onWsClose(event)), this.reconnectInterval);
+
         this.reconnectAttempts++;
+      } else {
+        const errResp: WsResponse = {
+          event: CbEvents.OnConnectLimitFailed,
+          errCode: -2,
+          errMsg: 'WebSocket is not open. Message not sent.',
+          data: '',
+          operationID: CbEvents.OnConnectLimitFailed
+        };
+        this.onMessage(errResp)
       }
     };
 
@@ -158,6 +169,14 @@ class WebSocketManager {
       }
     } else {
       console.error('WebSocket is not open. Message not sent.');
+      const errResp: WsResponse = {
+        event: message.reqFuncName,
+        errCode: -1,
+        errMsg: 'WebSocket is not open. Message not sent.',
+        data: '',
+        operationID: message.operationID
+      };
+      this.onMessage(errResp)
     }
   };
 

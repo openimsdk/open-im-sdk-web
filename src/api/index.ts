@@ -35,6 +35,7 @@ const forceCloseEvents = [
   RequestApi.Logout,
   CbEvents.OnKickedOffline,
   CbEvents.OnUserTokenExpired,
+  CbEvents.OnConnectLimitFailed,
 ];
 
 function isEventInCallbackEvents(event: string): event is CbEvents {
@@ -185,6 +186,7 @@ class OpenIMSDK
     try {
       await this.wsManager.connect();
     } catch (error) {
+      this.wsManager = undefined
       return Promise.reject({
         data: '',
         operationID,

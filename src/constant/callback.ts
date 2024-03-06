@@ -1,4 +1,6 @@
 export enum CbEvents {
+  OnConnectLimitFailed = 'OnConnectLimitFailed',
+
   OnConnectFailed = 'OnConnectFailed',
   OnConnectSuccess = 'OnConnectSuccess',
   OnConnecting = 'OnConnecting',
