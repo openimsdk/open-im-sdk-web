@@ -1,6 +1,6 @@
 {
   "name": "open-im-sdk",
-  "version": "3.5.1-beta.1",
+  "version": "3.5.1",
   "description": "OpenIM SDK for MiniProgram",
   "source": "src/index.ts",
   "main": "lib/index.js",
@@ -11,7 +11,8 @@
   "exports": {
     ".": {
       "import": "./lib/index.es.js",
-      "require": "./lib/index.js"
+      "require": "./lib/index.js",
+      "types": "./lib/index.d.ts"
     }
   },
   "scripts": {

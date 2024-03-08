@@ -310,7 +310,7 @@ export interface MessageApi {
   findMessageList: (
     params: FindMessageParams[],
     operationID?: string
-  ) => Promise<WsResponse<MessageItem[]>>;
+  ) => Promise<WsResponse<SearchMessageResult>>;
   insertGroupMessageToLocalStorage: (
     params: InsertGroupMsgParams,
     operationID?: string
