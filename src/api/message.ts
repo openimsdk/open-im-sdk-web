@@ -124,7 +124,7 @@ export function setupMessage(openIMSDK: OpenIMSDK) {
           data.recvID,
           data.groupID,
           JSON.stringify(offlinePushInfo),
-          data.isOnlineonly ?? false,
+          data.isOnlineOnly ?? false,
         ]);
       }
     ),
@@ -144,7 +144,7 @@ export function setupMessage(openIMSDK: OpenIMSDK) {
         data.recvID,
         data.groupID,
         JSON.stringify(offlinePushInfo),
-        data.isOnlineonly ?? false,
+        data.isOnlineOnly ?? false,
       ]);
     }),
     typingStatusUpdate: openIMSDK.createRequestFunction<TypingUpdateParams>(
@@ -310,7 +310,7 @@ export interface MessageApi {
   findMessageList: (
     params: FindMessageParams[],
     operationID?: string
-  ) => Promise<WsResponse<MessageItem[]>>;
+  ) => Promise<WsResponse<SearchMessageResult>>;
   insertGroupMessageToLocalStorage: (
     params: InsertGroupMsgParams,
     operationID?: string
