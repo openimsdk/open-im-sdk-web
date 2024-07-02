@@ -2,7 +2,7 @@ import type { WsRequest, WsResponse } from '@/types/entity';
 import { utf8Decode, utf8Encode } from './textCoder';
 import { RequestApi } from '@/constant/api';
 
-type AppPlatform = 'unknow' | 'web' | 'uni' | 'wx';
+type AppPlatform = 'unknow' | 'web' | 'uni' | 'wx' |'my';
 
 enum WsOpenState {
   CONNECTING = 0,
@@ -40,6 +40,11 @@ class WebSocketManager {
     if (typeof WebSocket !== 'undefined') {
       return 'web';
     }
+    // my优先于uni 其onBinaryMessage中返回值相对于其他较为特殊 
+    // @ts-ignore
+    if (typeof my !== 'undefined') {
+      return 'my';
+    }
     // @ts-ignore
     if (typeof uni !== 'undefined') {
       return 'uni';
@@ -48,6 +53,7 @@ class WebSocketManager {
     if (typeof wx !== 'undefined') {
       return 'wx';
     }
+     
     return 'unknow';
   };
 
@@ -74,6 +80,8 @@ class WebSocketManager {
             url: this.url,
             complete: () => {},
           };
+          // @ts-ignore
+          my && (connectOptions.multiple = true)
           if (this.platformNamespace === 'uni') {
             // @ts-ignore
             this.ws = uni.connectSocket(connectOptions);
@@ -81,6 +89,10 @@ class WebSocketManager {
           if (this.platformNamespace === 'wx') {
             // @ts-ignore
             this.ws = wx.connectSocket(connectOptions);
+          }
+          if (this.platformNamespace === 'my') {
+            // @ts-ignore
+            this.ws = my.connectSocket(connectOptions);
           }
           // @ts-ignore
           this.ws.onOpen(onWsOpen);
@@ -127,13 +139,17 @@ class WebSocketManager {
     }
   };
 
-  private onBinaryMessage = async (message: string) => {
+  private onBinaryMessage = async (message: string|{data:string}) => {
     this.isProcessingMessage = true;
     // if (this.platformNamespace === 'web' && data instanceof Blob) {
     //   data = await data.arrayBuffer();
     // }
     // const message = utf8Decode(data);
-    const json: WsResponse = JSON.parse(message);
+    if(typeof message !== 'string' && this.platformNamespace === 'my'){
+      message = message.data
+    }
+    const json: WsResponse = JSON.parse(message as string)
+    // const json: WsResponse = JSON.parse(message);
     this.onMessage(json);
     if (json.event === RequestApi.Login && json.errCode === 0) {
       this.shouldReconnect = true;
