@@ -34,6 +34,7 @@ import { uuid } from '@/utils/uuid';
 const forceCloseEvents = [
   RequestApi.Logout,
   CbEvents.OnKickedOffline,
+  CbEvents.OnUserTokenInvalid,
   CbEvents.OnUserTokenExpired,
 ];
 
@@ -501,6 +502,7 @@ class OpenIMSDK
   getFriendApplicationListAsApplicant!: FriendApi['getFriendApplicationListAsApplicant'];
   getFriendApplicationListAsRecipient!: FriendApi['getFriendApplicationListAsRecipient'];
   getFriendList!: FriendApi['getFriendList'];
+  getFriendListPage!: FriendApi['getFriendListPage'];
   getSpecifiedFriendsInfo!: FriendApi['getSpecifiedFriendsInfo'];
   refuseFriendApplication!: FriendApi['refuseFriendApplication'];
   removeBlack!: FriendApi['removeBlack'];
@@ -512,6 +514,7 @@ class OpenIMSDK
   joinGroup!: GroupApi['joinGroup'];
   inviteUserToGroup!: GroupApi['inviteUserToGroup'];
   getJoinedGroupList!: GroupApi['getJoinedGroupList'];
+  getJoinedGroupListPage!: GroupApi['getJoinedGroupListPage'];
   searchGroups!: GroupApi['searchGroups'];
   getSpecifiedGroupsInfo!: GroupApi['getSpecifiedGroupsInfo'];
   setGroupInfo!: GroupApi['setGroupInfo'];

@@ -38,6 +38,11 @@ export interface PromiseMap {
   reject: (response: WsResponse) => void;
 }
 
+export type Pagination = {
+  offset: number;
+  count: number;
+}
+
 export type MessageEntity = {
   type: string;
   offset: number;
