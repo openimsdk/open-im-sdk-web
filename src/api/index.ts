@@ -35,6 +35,7 @@ const forceCloseEvents = [
   RequestApi.Logout,
   CbEvents.OnKickedOffline,
   CbEvents.OnUserTokenExpired,
+  CbEvents.OnConnectLimitFailed,
 ];
 
 function isEventInCallbackEvents(event: string): event is CbEvents {
@@ -51,6 +52,11 @@ class OpenIMSDK
   private wsManager?: WebSocketManager;
   private requestMap = new Map<string, PromiseMap>();
 
+  private requestTimeoutMap = new Map<string, number>();
+  private timeoutHandler?: any = undefined;
+  private timeoutTimeout = 60000;
+  private timeoutInterval = 15000;
+
   constructor() {
     super();
     Object.assign(this, setupUser(this));
@@ -59,6 +65,64 @@ class OpenIMSDK
     Object.assign(this, setupMessage(this));
     Object.assign(this, setupConversation(this));
   }
+
+  private rejectAllRequest = (event: (RequestApi | CbEvents)) => {
+    console.debug("============ rejectAllRequest ", event)
+    this.requestTimeoutMap.forEach((time, operationID) => {
+      const errResp: WsResponse = {
+        event: event,
+        errCode: -1,
+        errMsg: 'request all reject',
+        data: '',
+        operationID: operationID
+      };
+      const promiseHandlers = this.requestMap.get(operationID);
+      promiseHandlers?.reject(errResp)
+    })
+  }
+
+  private startTimeoutCleaner = () => {
+    if(this.timeoutHandler) {
+      return;
+    }
+    console.debug("============ startTimeoutCleaner")
+    const startTime = new Date().getTime()
+    // 定时器清理超时请求
+    this.timeoutHandler = setInterval(() => {
+      console.debug("============ check Timeout operations ", startTime)
+      const outTime = new Date().getTime() - this.timeoutTimeout;
+      const operationIDTimeoutList : string[]= [];
+      // 查找超时请求
+      this.requestTimeoutMap.forEach((time, operationID) => {
+        if(outTime >= time) {
+          operationIDTimeoutList.push(operationID);
+        }
+      })
+      // 清理超时请求
+      operationIDTimeoutList.forEach((operationID) => {
+        const errResp: WsResponse = {
+          event: CbEvents.OnRequestTimeout,
+          errCode: -1,
+          errMsg: 'request timeout',
+          data: '',
+          operationID: operationID
+        };
+        const promiseHandlers = this.requestMap.get(operationID);
+        promiseHandlers?.reject(errResp)
+        console.debug("============ promise Timeout reject ", operationID)
+        this.requestMap.delete(operationID)
+        this.requestTimeoutMap.delete(operationID)
+      })
+    }, this.timeoutInterval)
+  };
+
+  private stopTimeoutCleaner = () => {
+    console.debug("============ stopTimeoutCleaner")
+    if(this.timeoutHandler) {
+      clearInterval(this.timeoutHandler)
+      this.timeoutHandler = undefined
+    }
+  };
 
   private sendRequest = <T>(requestObj: WsRequest): Promise<WsResponse<T>> => {
     return new Promise((resolve, reject) => {
@@ -77,6 +141,11 @@ class OpenIMSDK
         resolve: resolve as unknown as (value: WsResponse<unknown>) => void,
         reject,
       });
+      this.requestTimeoutMap.set(requestObj.operationID, new Date().getTime())
+      // // vvv 纯测试
+      // if(RequestApi.GetAdvancedHistoryMessageList === requestObj.reqFuncName) {
+      //   return;
+      // }
       this.wsManager?.sendMessage(requestObj);
     });
   };
@@ -126,6 +195,8 @@ class OpenIMSDK
     } catch (error) {}
 
     if (forceCloseEvents.includes(data.event)) {
+      this.rejectAllRequest(data.event)
+      this.stopTimeoutCleaner()
       this.wsManager?.close();
       this.wsManager = undefined;
     }
@@ -134,6 +205,7 @@ class OpenIMSDK
       this.emit(data.event, data);
       if (forceCloseEvents.includes(data.event)) {
         this.requestMap.clear();
+        this.requestTimeoutMap.clear();
       }
       return;
     }
@@ -143,15 +215,17 @@ class OpenIMSDK
         data.errCode === 0 ? promiseHandlers.resolve : promiseHandlers.reject;
       promiseHandler(data);
       this.requestMap.delete(data.operationID);
+      this.requestTimeoutMap.delete(data.operationID)
     }
     if (forceCloseEvents.includes(data.event)) {
       this.requestMap.clear();
+      this.requestTimeoutMap.clear();
     }
   };
 
   private handleReconnectSuccess = () => {
     if (!this.userID) return;
-
+    this.startTimeoutCleaner()
     this.sendRequest({
       data: JSON.stringify([this.userID, this.token]),
       operationID: uuid(),
@@ -164,6 +238,7 @@ class OpenIMSDK
     params: LoginParams,
     operationID = uuid()
   ): Promise<WsResponse> => {
+
     if (this.wsManager) {
       return Promise.resolve({
         data: '',
@@ -182,9 +257,11 @@ class OpenIMSDK
       this.handleMessage,
       this.handleReconnectSuccess
     );
+
     try {
       await this.wsManager.connect();
     } catch (error) {
+      this.wsManager = undefined
       return Promise.reject({
         data: '',
         operationID,
@@ -193,6 +270,7 @@ class OpenIMSDK
         event: RequestApi.Login,
       });
     }
+    this.startTimeoutCleaner();
     return this.sendRequest({
       data: JSON.stringify([params.userID, params.token]),
       operationID,
