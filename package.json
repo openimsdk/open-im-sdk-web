@@ -1,6 +1,6 @@
 {
   "name": "open-im-sdk",
-  "version": "3.5.2",
+  "version": "v3.8.0-rc.2",
   "description": "OpenIM SDK for MiniProgram",
   "source": "src/index.ts",
   "main": "lib/index.js",

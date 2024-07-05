@@ -20,6 +20,7 @@ import type {
   GroupApplicationItem,
   GroupItem,
   GroupMemberItem,
+  Pagination,
   WsResponse,
 } from '@/types/entity';
 
@@ -156,6 +157,10 @@ export interface GroupApi {
     operationID?: string
   ) => Promise<WsResponse<unknown>>;
   getJoinedGroupList: (
+    operationID?: string
+  ) => Promise<WsResponse<GroupItem[]>>;
+  getJoinedGroupListPage: (
+    params: Pagination,
     operationID?: string
   ) => Promise<WsResponse<GroupItem[]>>;
   searchGroups: (
