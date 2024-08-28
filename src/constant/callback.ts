@@ -1,14 +1,17 @@
 export enum CbEvents {
+  Login = 'Login',
   OnConnectFailed = 'OnConnectFailed',
   OnConnectSuccess = 'OnConnectSuccess',
   OnConnecting = 'OnConnecting',
   OnKickedOffline = 'OnKickedOffline',
-  OnUserTokenInvalid = 'OnUserTokenInvalid',
   OnSelfInfoUpdated = 'OnSelfInfoUpdated',
   OnUserTokenExpired = 'OnUserTokenExpired',
+  OnUserTokenInvalid = 'OnUserTokenInvalid',
   OnProgress = 'OnProgress',
   OnRecvNewMessage = 'OnRecvNewMessage',
   OnRecvNewMessages = 'OnRecvNewMessages',
+  OnRecvOfflineNewMessage = 'onRecvOfflineNewMessage',
+  OnRecvOfflineNewMessages = 'onRecvOfflineNewMessages',
   OnRecvMessageRevoked = 'OnRecvMessageRevoked',
   OnNewRecvMessageRevoked = 'OnNewRecvMessageRevoked',
   OnRecvC2CReadReceipt = 'OnRecvC2CReadReceipt',
@@ -17,8 +20,8 @@ export enum CbEvents {
   OnNewConversation = 'OnNewConversation',
   OnSyncServerFailed = 'OnSyncServerFailed',
   OnSyncServerFinish = 'OnSyncServerFinish',
-  OnSyncServerStart = 'OnSyncServerStart',
   OnSyncServerProgress = 'OnSyncServerProgress',
+  OnSyncServerStart = 'OnSyncServerStart',
   OnTotalUnreadMessageCountChanged = 'OnTotalUnreadMessageCountChanged',
   OnBlackAdded = 'OnBlackAdded',
   OnBlackDeleted = 'OnBlackDeleted',
@@ -44,6 +47,7 @@ export enum CbEvents {
   UploadComplete = 'UploadComplete',
   OnRecvCustomBusinessMessage = 'OnRecvCustomBusinessMessage',
   OnUserStatusChanged = 'OnUserStatusChanged',
+  OnUploadLogsProgress = 'OnUploadLogsProgress',
 
   // rtc
   OnReceiveNewInvitation = 'OnReceiveNewInvitation',
@@ -60,4 +64,7 @@ export enum CbEvents {
   OnRoomParticipantConnected = 'OnRoomParticipantConnected',
   OnRoomParticipantDisconnected = 'OnRoomParticipantDisconnected',
   OnReceiveCustomSignal = 'OnReceiveCustomSignal',
+
+  // unuse
+  UnUsedEvent = 'UnUsedEvent',
 }

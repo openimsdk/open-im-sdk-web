@@ -33,6 +33,13 @@ export interface WsResponse<T = unknown> {
   operationID: string;
 }
 
+export interface HttpResponse<T = unknown> {
+  data: T;
+  errCode: number;
+  errMsg: string;
+  errDlt: string;
+}
+
 export interface PromiseMap {
   resolve: (response: WsResponse) => void;
   reject: (response: WsResponse) => void;
@@ -41,7 +48,7 @@ export interface PromiseMap {
 export type Pagination = {
   offset: number;
   count: number;
-}
+};
 
 export type MessageEntity = {
   type: string;

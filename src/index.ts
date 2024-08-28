@@ -1,4 +1,4 @@
-import OpenIMSDK from './api';
+import OpenIMSDK from '@/core';
 import { CbEvents } from '@/constant/callback';
 import { ErrorCode, RequestApi } from '@/constant/api';
 export * from '@/types/enum';

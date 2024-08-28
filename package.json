@@ -51,5 +51,9 @@
     "spark-md5": "^3.0.2",
     "tsc-alias": "^1.8.8",
     "typescript": "^5.2.2"
+  },
+  "dependencies": {
+    "axios": "^1.7.2",
+    "axios-miniprogram-adapter": "^0.3.5"
   }
 }
