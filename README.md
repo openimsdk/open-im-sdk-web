@@ -1,3 +1,7 @@
+# ⚠️ Project No Longer Maintained
+This project is no longer maintained and may contain unpatched vulnerabilities or compatibility issues with modern environments. Feel free to fork and modify the project if needed.
+If you need to use jssdk in the new version (v3.8.2+), you can introduce [@openim/client-sdk](https://www.npmjs.com/package/@openim/client-sdk) to directly communicate with IM Server without the need to deploy this project.
+
 # MiniProgram SDK for OpenIM 👨‍💻💬
 
 Use this SDK to add instant messaging capabilities to your application. By connecting to a self-hosted [OpenIM](https://www.openim.io/) server, you can quickly integrate instant messaging capabilities into your app with just a few lines of code.
